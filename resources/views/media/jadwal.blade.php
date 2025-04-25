@@ -81,12 +81,12 @@ async function loadJadwal() {
             renderJadwal(response.data || []); // Ubah dari response.data.data menjadi response.data
         } else {
             showAlert(response.meta?.message || 'Gagal memuat jadwal');
-            // alert('Gagal memuat jadwal: ' + response.meta?.message);
+            // showAlert('Gagal memuat jadwal: ' + response.meta?.message);
         }
     } catch (error) {
         print.error('Error:', error);
         showAlert('Terjadi kesalahan saat memuat jadwal', 'error');
-        // alert('Terjadi kesalahan saat memuat jadwal');
+        // showAlert('Terjadi kesalahan saat memuat jadwal');
     }
 }
 
@@ -175,7 +175,7 @@ async function editJadwal(id) {
     } catch (error) {
         // print.error('Error:', error);
         showAlert(response.meta?.message || 'Gagal mengambil data jadwal', 'error');
-        // alert('Terjadi kesalahan saat mengambil data jadwal');
+        // showAlert('Terjadi kesalahan saat mengambil data jadwal');
     }
 }
 
@@ -210,25 +210,25 @@ document.getElementById('jadwalForm').addEventListener('submit', async function(
 
     if (!formData.get('image') && !id) {
         showAlert('Pilih gambar terlebih dahulu', 'error');
-        // alert('Pilih gambar terlebih dahulu');
+        // showAlert('Pilih gambar terlebih dahulu');
         return;
     }
 
     try {
         const response = await AwaitFetchApi(endpoint, method, formData);
         if (response.meta?.code === 200 || response.meta?.code === 201) {
-            // alert(response.meta.message || 'Jadwal berhasil disimpan');
+            // showAlert(response.meta.message || 'Jadwal berhasil disimpan');
             showAlert(response.meta.message || 'Jadwal berhasil disimpan', 'success');
             closeModal();
             loadJadwal();
         } else {
             showAlert(response.meta?.message || 'Gagal menyimpan jadwal', 'error');
-            // alert('Gagal menyimpan jadwal: ' + (response.meta?.message || 'Terjadi kesalahan'));
+            // showAlert('Gagal menyimpan jadwal: ' + (response.meta?.message || 'Terjadi kesalahan'));
         }
     } catch (error) {
         print.error('Error:', error);
         showAlert('Terjadi kesalahan saat menyimpan jadwal', 'error');
-        // alert('Terjadi kesalahan saat menyimpan jadwal');
+        // showAlert('Terjadi kesalahan saat menyimpan jadwal');
     }
 });
 

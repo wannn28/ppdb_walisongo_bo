@@ -5,7 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Manajemen User</h1>
         <div class="flex gap-4">
-            <input type="text" id="searchInput" placeholder="Cari berdasarkan ID..." class="border rounded-lg px-4 py-2 w-64">
+            <input type="text" id="searchInput" placeholder="Cari user..." class="border rounded-lg px-4 py-2 w-64">
             {{-- <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal()">
                 <i class="fas fa-plus mr-2"></i> Tambah User
             </button> --}}
@@ -22,7 +22,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terakhir Update</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+        
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -172,12 +172,6 @@ function renderTable(users) {
                 <td class="px-6 py-4 whitespace-nowrap">${new Date(user.created_at).toLocaleString()}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${new Date(user.updated_at).toLocaleString()}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editUser(${user.id})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="text-red-600 hover:text-red-900" onclick="deleteUser(${user.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
                 </td>
             </tr>
         `;
@@ -192,10 +186,10 @@ function searchUser() {
         return;
     }
 
-    AwaitFetchApi(`admin/user/${searchTerm}`, 'GET')
+    AwaitFetchApi(`admin/users?search=${searchTerm}`, 'GET')
         .then(response => {
-            if (response.data) {
-                renderTable([response.data]);
+            if (response.data && response.data.length > 0) {
+                renderTable(response.data);
             } else {
                 showAlert('User tidak ditemukan', 'warning');
                 renderTable([]);
@@ -224,39 +218,6 @@ function openModal() {
 
 function closeModal() {
     document.getElementById('userModal').classList.add('hidden');
-}
-
-async function editUser(id) {
-    try {
-        const response = await AwaitFetchApi(`admin/user/${id}`, 'GET');
-        if(response.data) {
-            const user = response.data;
-            document.getElementById('no_telp').value = user.no_telp;
-            document.getElementById('role').value = user.role;
-            document.querySelector(`input[name="status"][value="${user.status ? 1 : 0}"]`).checked = true;
-            document.getElementById('userForm').dataset.editingId = user.id;
-            
-            document.getElementById('userModal').classList.remove('hidden');
-            document.getElementById('modalTitle').textContent = 'Edit User';
-        }
-    } catch (error) {
-        // showAlert('Gagal memuat data user', 'error');
-    }
-}
-
-async function deleteUser(id) {
-    const result = await showDeleteConfirmation('Apakah Anda yakin ingin menghapus user ini?');
-    if (result.isConfirmed) {
-        try {
-            const response = await AwaitFetchApi(`admin/user/${id}`, 'DELETE');
-            if(response.meta?.code === 200) {
-                showAlert('User berhasil dihapus', 'success');
-                await fetchData();
-            }
-        } catch (error) {
-            showAlert('Gagal menghapus user', 'error');
-        }
-    }
 }
 
 async function saveUser(formData, id = null) {

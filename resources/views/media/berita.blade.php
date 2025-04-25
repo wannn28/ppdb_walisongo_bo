@@ -67,11 +67,11 @@ async function loadBerita() {
         if (response.meta?.code === 200) {
             renderBerita(response.data.data || []);
         } else {
-            alert('Gagal memuat berita: ' + response.meta?.message);
+            showAlert('Gagal memuat berita: ' + response.meta?.message);
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat memuat berita');
+        showAlert('Terjadi kesalahan saat memuat berita');
     }
 }
 
@@ -122,28 +122,28 @@ async function uploadBerita() {
     const fileInput = document.getElementById('berita-upload');
     
     if (!fileInput.files[0]) {
-        alert('Pilih gambar terlebih dahulu');
+        showAlert('Pilih gambar terlebih dahulu');
         return;
     }
     
     if (!formData.get('urutan')) {
-        alert('Masukkan urutan berita');
+        showAlert('Masukkan urutan berita');
         return;
     }
 
     try {
         const response = await AwaitFetchApi('admin/berita', 'POST', formData);
         if (response.meta?.code === 200) {
-            alert(response.meta.message || 'Berita berhasil diupload');
+            showAlert(response.meta.message || 'Berita berhasil diupload');
             document.getElementById('uploadForm').reset();
             document.getElementById('preview').classList.add('hidden');
             loadBerita(); // Muat ulang daftar berita
         } else {
-            alert('Gagal upload berita: ' + (response.meta?.message || 'Terjadi kesalahan'));
+            showAlert('Gagal upload berita: ' + (response.meta?.message || 'Terjadi kesalahan'));
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat upload berita');
+        showAlert('Terjadi kesalahan saat upload berita');
     }
 }
 
@@ -189,7 +189,7 @@ async function editBerita(id) {
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat mengambil data berita');
+        showAlert('Terjadi kesalahan saat mengambil data berita');
     }
 }
 

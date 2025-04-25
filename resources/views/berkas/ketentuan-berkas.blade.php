@@ -146,7 +146,7 @@
                 const response = await AwaitFetchApi('admin/ketentuan-berkas', 'GET');
                 if (response.meta?.code === 200) {
                     // Perbaikan path data yang benar
-                    renderKetentuanBerkas(response.data || {}); 
+                    renderKetentuanBerkas(response.data || {});
                 } else {
                     showAlert('Gagal memuat ketentuan berkas: ' + response.meta?.message, 'error');
                 }
@@ -185,8 +185,8 @@
             <td class="px-6 py-4 whitespace-nowrap">${item.nama}</td>
             <td class="px-6 py-4 whitespace-nowrap">
                 ${jenjangArray.map(jenjang => `
-                        <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 mr-1">${jenjang}</span>
-                    `).join('')}
+                            <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 mr-1">${jenjang}</span>
+                        `).join('')}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${item.is_required ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
@@ -217,7 +217,7 @@
                         checkbox.checked = data.jenjang_sekolah.split(',').includes(checkbox.value);
                     });
                     document.querySelector(`input[name="required"][value="${data.is_required ? 1 : 0}"]`).checked =
-                    true;
+                        true;
                     document.getElementById('berkasForm').setAttribute('data-id', id);
                     document.getElementById('modalTitle').textContent = 'Edit Ketentuan Berkas';
                     openModal();
@@ -256,19 +256,19 @@
 
             const formData = new FormData(this);
             const id = this.getAttribute('data-id');
-            
+
             // Gunakan endpoint dan method yang sama untuk create dan update
             const endpoint = 'admin/ketentuan-berkas';
             const method = 'POST';
-            
+
             // Tambahkan ID ke data jika ada
             const data = {
                 nama: formData.get('namaBerkas'),
                 jenjang_sekolah: formData.getAll('jenjang[]').join(','),
                 is_required: formData.get('required') === '1' ? 1 : 0
             };
-            
-            if(id) data.id = id;
+
+            if (id) data.id = id;
 
             try {
                 const response = await AwaitFetchApi(endpoint, method, data);
@@ -294,6 +294,9 @@
             document.getElementById('modalTitle').textContent = 'Tambah Ketentuan Berkas';
         }
 
+        function closeModal() {
+            document.getElementById('berkasModal').classList.add('hidden');
+        }
         // Muat data saat halaman dimuat
         document.addEventListener('DOMContentLoaded', loadKetentuanBerkas);
     </script>

@@ -52,11 +52,11 @@ async function loadBanners() {
         if (response.meta?.code === 200) {
             renderBanners(response.data.data || []);
         } else {
-            alert('Gagal memuat banner: ' + response.meta?.message);
+            showAlert('Gagal memuat banner: ' + response.meta?.message);
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat memuat banner');
+        showAlert('Terjadi kesalahan saat memuat banner');
     }
 }
 
@@ -100,28 +100,28 @@ async function uploadBanner() {
     const fileInput = document.getElementById('banner-upload');
     
     if (!fileInput.files[0]) {
-        alert('Pilih gambar terlebih dahulu');
+        showAlert('Pilih gambar terlebih dahulu');
         return;
     }
     
     if (!formData.get('urutan')) {
-        alert('Masukkan urutan banner');
+        showAlert('Masukkan urutan banner');
         return;
     }
 
     try {
         const response = await AwaitFetchApi('admin/homepage', 'POST', formData);
         if (response.meta?.code === 200) {
-            alert(response.meta.message || 'Banner berhasil diupload');
+            showAlert(response.meta.message || 'Banner berhasil diupload');
             document.getElementById('uploadForm').reset();
             document.getElementById('preview').classList.add('hidden');
             loadBanners(); // Muat ulang daftar banner
         } else {
-            alert('Gagal upload banner: ' + (response.meta?.message || 'Terjadi kesalahan'));
+            showAlert('Gagal upload banner: ' + (response.meta?.message || 'Terjadi kesalahan'));
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Terjadi kesalahan saat upload banner');
+        showAlert('Terjadi kesalahan saat upload banner');
     }
 }
 
