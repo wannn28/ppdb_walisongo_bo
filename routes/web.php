@@ -1,0 +1,62 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return view('dashboard');
+})->name('dashboard');
+
+// Media Management Routes
+Route::get('/homepage', function () {
+    return view('media.homepage');
+})->name('homepage');
+// Media Management Routes
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::get('/berita', function () {
+    return view('media.berita');
+})->name('berita');
+
+Route::get('/jadwal', function () {
+    return view('media.jadwal');
+})->name('jadwal');
+
+Route::get('/biaya-reguler', function () {
+    return view('media.biaya-reguler');
+})->name('biaya-reguler');
+
+// Berkas Management Routes
+Route::get('/ketentuan-berkas', function () {
+    return view('berkas.ketentuan-berkas');
+})->name('ketentuan-berkas');
+
+Route::get('/berkas-peserta', function () {
+    return view('berkas.berkas-peserta');
+})->name('berkas-peserta');
+
+// User Management Routes
+Route::get('/detail-user', function () {
+    return view('user.detail-user');
+})->name('detail-user');
+
+// Peserta Management Routes
+Route::get('/detail-peserta', function () {
+    return view('peserta.detail-peserta');
+})->name('detail-peserta');
+
+// Transaksi Management Routes
+Route::get('/transaksi-user', function () {
+    return view('transaksi.transaksi-user');
+})->name('transaksi-user');
+
+Route::get('/pengaturan-biaya', function () {
+    return view('transaksi.pengaturan-biaya');
+})->name('pengaturan-biaya');
+
+// Logout Route (dummy)
+Route::post('/logout', function () {
+    // Implementasi logout
+    return redirect('/login');
+})->name('logout');
