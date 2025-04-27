@@ -17,7 +17,7 @@
         
         <div class="mb-6">
             <h2 class="text-xl font-semibold mb-4">Tambah Jadwal Baru</h2>
-            <div class="border-dashed border-2 border-gray-300 rounded-lg p-6 text-center cursor-pointer" onclick="openModal()">
+            <div class="border-dashed border-2 border-gray-300 rounded-lg p-6 text-center cursor-pointer" onclick="openModal('jadwalModal')">
                 <i class="fas fa-plus-circle text-3xl text-gray-400"></i>
                 <p class="mt-2 text-sm text-gray-500">Klik untuk menambah jadwal baru</p>
             </div>
@@ -26,7 +26,7 @@
 </div>
 
 <!-- Modal Tambah/Edit Jadwal -->
-<div id="jadwalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+<div id="jadwalModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">Tambah Jadwal</h3>
@@ -59,7 +59,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                    <button type="button" data-close-modal="jadwalModal" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
                         Batal
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
@@ -67,6 +67,18 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Image Preview -->
+<div id="imageViewModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="relative max-w-4xl w-full">
+            <button data-close-modal="imageViewModal" class="absolute top-0 right-0 -mt-12 -mr-12 text-white text-2xl hover:text-gray-300 z-50">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="fullSizeImage" class="w-full object-contain max-h-[80vh]" src="" alt="Jadwal Preview">
         </div>
     </div>
 </div>
@@ -88,6 +100,12 @@ async function loadJadwal() {
         showAlert('Terjadi kesalahan saat memuat jadwal', 'error');
         // showAlert('Terjadi kesalahan saat memuat jadwal');
     }
+}
+
+// Fungsi untuk menampilkan gambar dalam ukuran besar
+function viewFullImage(url) {
+    document.getElementById('fullSizeImage').src = url;
+    openModal('imageViewModal');
 }
 
 // Fungsi untuk merender jadwal ke dalam container
@@ -115,7 +133,10 @@ function renderJadwal(jadwals) {
         const jadwalElement = document.createElement('div');
         jadwalElement.className = 'border rounded-lg p-4 relative';
         jadwalElement.innerHTML = `
-            <img src="${jadwal.url}" alt="Jadwal ${jadwal.id}" class="w-full h-40 object-cover rounded mb-3">
+            <img src="${jadwal.url}" alt="Jadwal ${jadwal.id}" 
+                class="w-full h-40 object-cover rounded mb-3 cursor-pointer hover:opacity-90 transition-opacity" 
+                onclick="viewFullImage('${jadwal.url}')"
+                title="Klik untuk memperbesar">
             <div class="flex justify-between items-start mb-2">
                 <div>
                     <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">${jadwal.jenjang_sekolah}</span>
@@ -146,18 +167,6 @@ document.getElementById('image').addEventListener('change', function(e) {
     }
 });
 
-function openModal() {
-    document.getElementById('jadwalModal').classList.remove('hidden');
-    document.getElementById('jadwalForm').reset();
-    document.getElementById('preview').classList.add('hidden');
-    document.getElementById('modalTitle').textContent = 'Tambah Jadwal';
-    document.getElementById('jadwalForm').removeAttribute('data-id');
-}
-
-function closeModal() {
-    document.getElementById('jadwalModal').classList.add('hidden');
-}
-
 async function editJadwal(id) {
     try {
         const response = await AwaitFetchApi(`admin/media/${id}`, 'GET');
@@ -170,7 +179,7 @@ async function editJadwal(id) {
             }
             document.getElementById('jadwalForm').setAttribute('data-id', id);
             document.getElementById('modalTitle').textContent = 'Edit Jadwal';
-            openModal();
+            openModal('jadwalModal');
         }
     } catch (error) {
         // print.error('Error:', error);
@@ -219,7 +228,7 @@ document.getElementById('jadwalForm').addEventListener('submit', async function(
         if (response.meta?.code === 200 || response.meta?.code === 201) {
             // showAlert(response.meta.message || 'Jadwal berhasil disimpan');
             showAlert(response.meta.message || 'Jadwal berhasil disimpan', 'success');
-            closeModal();
+            closeModal('jadwalModal');
             loadJadwal();
         } else {
             showAlert(response.meta?.message || 'Gagal menyimpan jadwal', 'error');

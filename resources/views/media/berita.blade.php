@@ -59,6 +59,18 @@
     </div>
 </div>
 
+<!-- Modal Image Preview -->
+<div id="imageViewModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="relative max-w-4xl w-full">
+            <button data-close-modal="imageViewModal" class="absolute top-0 right-0 -mt-12 -mr-12 text-white text-2xl hover:text-gray-300 z-50">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="fullSizeImage" class="w-full object-contain max-h-[80vh]" src="" alt="Berita Preview">
+        </div>
+    </div>
+</div>
+
 <script>
 // Fungsi untuk memuat semua berita saat halaman dimuat
 async function loadBerita() {
@@ -75,6 +87,12 @@ async function loadBerita() {
     }
 }
 
+// Fungsi untuk menampilkan gambar dalam ukuran besar
+function viewFullImage(url) {
+    document.getElementById('fullSizeImage').src = url;
+    openModal('imageViewModal');
+}
+
 // Fungsi untuk merender berita ke dalam container
 function renderBerita(beritas) {
     const container = document.getElementById('berita-container');
@@ -84,7 +102,10 @@ function renderBerita(beritas) {
         const beritaElement = document.createElement('div');
         beritaElement.className = 'border rounded-lg p-2 relative';
         beritaElement.innerHTML = `
-            <img src="${berita.url}" alt="Berita ${berita.urutan}" class="w-full h-40 object-cover rounded">
+            <img src="${berita.url}" alt="Berita ${berita.urutan}" 
+                class="w-full h-40 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                onclick="viewFullImage('${berita.url}')"
+                title="Klik untuk memperbesar">
             <div class="mt-2">
                 <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">${berita.jenjang_sekolah}</span>
                 <p class="text-sm mt-1">Urutan: ${berita.urutan}</p>

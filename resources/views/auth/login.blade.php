@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.href = '/';
             }
         } catch (error) {
-            console.error('Error:', error);
+            print.error('Error:', error);
             showNotification("Terjadi kesalahan saat login", "error");
         }
     });

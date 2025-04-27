@@ -22,10 +22,9 @@
     @include('components.header')
 @endsection
 
-<body class="mx-auto relative min-h-screen pl-64">
-
+<body class="mx-auto relative min-h-screen">
     {{-- @yield('header') --}}
-    <div class="p-4 space-y-4 bg-[#f8f8f8] font-semibold pb-24 min-h-screen pt-24">
+    <div id="main-content" class="p-4 space-y-4 bg-[#f8f8f8] font-semibold pb-24 min-h-screen pt-24 transition-all duration-300">
         @yield('content')
     </div>
     @section('navbar')

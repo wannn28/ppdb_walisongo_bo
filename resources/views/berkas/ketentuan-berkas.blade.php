@@ -5,7 +5,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">Manajemen Ketentuan Berkas</h1>
             <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
-                onclick="openModal()">
+                onclick="openModal('berkasModal')">
                 <i class="fas fa-plus mr-2"></i> Tambah Ketentuan Berkas
             </button>
         </div>
@@ -25,58 +25,14 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">1</td>
-                        <td class="px-6 py-4 whitespace-nowrap">Kartu Keluarga</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 mr-1">SD</span>
-                            <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 mr-1">SMP</span>
-                            <span class="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">SMA</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Ya
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editBerkas(1)">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900" onclick="deleteBerkas(1)">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">2</td>
-                        <td class="px-6 py-4 whitespace-nowrap">Ijazah</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 mr-1">SMP</span>
-                            <span class="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">SMA</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Ya
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="editBerkas(2)">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900" onclick="deleteBerkas(2)">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                    <!-- Data akan diisi oleh JavaScript -->
                 </tbody>
             </table>
         </div>
     </div>
 
     <!-- Modal Tambah/Edit Ketentuan Berkas -->
-    <div id="berkasModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+    <div id="berkasModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">Tambah Ketentuan Berkas</h3>
@@ -126,7 +82,7 @@
                     </div>
 
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="closeModal()"
+                        <button type="button" data-close-modal="berkasModal"
                             class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
                             Batal
                         </button>
@@ -140,6 +96,10 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadKetentuanBerkas();
+        });
+        
         // Fungsi untuk memuat semua ketentuan berkas
         async function loadKetentuanBerkas() {
             try {
@@ -220,7 +180,7 @@
                         true;
                     document.getElementById('berkasForm').setAttribute('data-id', id);
                     document.getElementById('modalTitle').textContent = 'Edit Ketentuan Berkas';
-                    openModal();
+                    openModal('berkasModal');
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -250,32 +210,44 @@
             }
         }
 
-        // Event listener untuk form submit
+        // Handle form submission
         document.getElementById('berkasForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
-            const formData = new FormData(this);
+            
             const id = this.getAttribute('data-id');
-
-            // Gunakan endpoint dan method yang sama untuk create dan update
-            const endpoint = 'admin/ketentuan-berkas';
-            const method = 'POST';
-
-            // Tambahkan ID ke data jika ada
+            const namaBerkas = document.getElementById('namaBerkas').value;
+            const jenjang = Array.from(document.querySelectorAll('input[name="jenjang[]"]:checked'))
+                .map(cb => cb.value)
+                .join(',');
+            const isRequired = document.querySelector('input[name="required"]:checked').value;
+            
+            if (!namaBerkas) {
+                showAlert('Nama berkas tidak boleh kosong', 'error');
+                return;
+            }
+            
+            if (!jenjang) {
+                showAlert('Pilih minimal satu jenjang sekolah', 'error');
+                return;
+            }
+            
             const data = {
-                nama: formData.get('namaBerkas'),
-                jenjang_sekolah: formData.getAll('jenjang[]').join(','),
-                is_required: formData.get('required') === '1' ? 1 : 0
+                nama: namaBerkas,
+                jenjang_sekolah: jenjang,
+                is_required: isRequired
             };
-
-            if (id) data.id = id;
-
+            
             try {
-                const response = await AwaitFetchApi(endpoint, method, data);
-                if (response.meta?.code === 200 || response.meta?.code === 201) {
+                let response;
+                if (id) {
+                    response = await AwaitFetchApi(`admin/ketentuan-berkas/${id}`, 'PUT', data);
+                } else {
+                    response = await AwaitFetchApi('admin/ketentuan-berkas', 'POST', data);
+                }
+                
+                if (response.meta?.code === 200) {
                     showAlert(response.meta.message || 'Ketentuan berkas berhasil disimpan', 'success');
-                    closeModal();
-                    this.reset();
+                    closeModal('berkasModal');
                     loadKetentuanBerkas();
                 } else {
                     showAlert(response.meta?.message || 'Gagal menyimpan ketentuan berkas', 'error');
@@ -285,19 +257,5 @@
                 showAlert('Terjadi kesalahan saat menyimpan ketentuan berkas', 'error');
             }
         });
-
-        // Reset form saat modal dibuka untuk tambah baru
-        function openModal() {
-            document.getElementById('berkasModal').classList.remove('hidden');
-            document.getElementById('berkasForm').reset();
-            document.getElementById('berkasForm').removeAttribute('data-id');
-            document.getElementById('modalTitle').textContent = 'Tambah Ketentuan Berkas';
-        }
-
-        function closeModal() {
-            document.getElementById('berkasModal').classList.add('hidden');
-        }
-        // Muat data saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', loadKetentuanBerkas);
     </script>
 @endsection

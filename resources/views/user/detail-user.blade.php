@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold">Manajemen User</h1>
         <div class="flex gap-4">
             <input type="text" id="searchInput" placeholder="Cari user..." class="border rounded-lg px-4 py-2 w-64">
-            {{-- <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal()">
+            {{-- <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal('userModal')">
                 <i class="fas fa-plus mr-2"></i> Tambah User
             </button> --}}
         </div>
@@ -16,12 +16,24 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Telepon</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Terakhir Update</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('id')">
+                        ID <span id="sort-id"></span>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('no_telp')">
+                        No. Telepon <span id="sort-no_telp"></span>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('role')">
+                        Role <span id="sort-role"></span>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('status')">
+                        Status <span id="sort-status"></span>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('created_at')">
+                        Tanggal Dibuat <span id="sort-created_at"></span>
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('updated_at')">
+                        Terakhir Update <span id="sort-updated_at"></span>
+                    </th>
         
                 </tr>
             </thead>
@@ -52,7 +64,7 @@
 </div>
 
 <!-- Modal Tambah/Edit User -->
-<div id="userModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full">
+<div id="userModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modalTitle">Tambah User</h3>
@@ -91,7 +103,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                    <button type="button" data-close-modal="userModal" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
                         Batal
                     </button>
                     <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
@@ -109,14 +121,17 @@ let allUsers = [];
 let currentPage = 1;
 let totalPages = 1;
 let perPage = 10;
+let sortBy = 'id';
+let sortDirection = 'asc';
 
 async function fetchData(page = 1, limit = 10) {
     try {
-        const response = await AwaitFetchApi(`admin/users?page=${page}&per_page=${limit}`, 'GET');
+        const response = await AwaitFetchApi(`admin/users?page=${page}&per_page=${limit}&sort_by=${sortBy}&order_by=${sortDirection}`, 'GET');
         if(response?.data) {
             allUsers = response.data;
             renderTable(allUsers);
             updatePagination(response.pagination);
+            updateSortIndicators();
         }
     } catch (error) {
         // showAlert('Gagal memuat data user', 'error');
@@ -148,6 +163,33 @@ function handlePagination(action) {
     }
     
     fetchData(currentPage, perPage);
+}
+
+function handleSort(column) {
+    if (sortBy === column) {
+        // Toggle direction if same column
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        // Default to ascending for new column
+        sortBy = column;
+        sortDirection = 'asc';
+    }
+    
+    fetchData(currentPage, perPage);
+}
+
+function updateSortIndicators() {
+    // Clear all sort indicators
+    document.querySelectorAll('[id^="sort-"]').forEach(el => {
+        el.innerHTML = '';
+    });
+    
+    // Set indicator for current sort column
+    const indicator = sortDirection === 'asc' ? '↑' : '↓';
+    const element = document.getElementById(`sort-${sortBy}`);
+    if (element) {
+        element.innerHTML = indicator;
+    }
 }
 
 function renderTable(users) {
@@ -186,7 +228,7 @@ function searchUser() {
         return;
     }
 
-    AwaitFetchApi(`admin/users?search=${searchTerm}`, 'GET')
+    AwaitFetchApi(`admin/users?search=${searchTerm}&sort_by=${sortBy}&order_by=${sortDirection}`, 'GET')
         .then(response => {
             if (response.data && response.data.length > 0) {
                 renderTable(response.data);
@@ -209,16 +251,6 @@ document.getElementById('searchInput').addEventListener('keypress', function(e) 
 
 // Panggil fetchData saat halaman dimuat
 document.addEventListener('DOMContentLoaded', fetchData);
-
-function openModal() {
-    document.getElementById('userModal').classList.remove('hidden');
-    document.getElementById('modalTitle').textContent = 'Tambah User';
-    document.getElementById('userForm').reset();
-}
-
-function closeModal() {
-    document.getElementById('userModal').classList.add('hidden');
-}
 
 async function saveUser(formData, id = null) {
     try {
@@ -250,7 +282,7 @@ document.getElementById('userForm').addEventListener('submit', async function(e)
     const success = await saveUser(formData, userId);
     
     if(success) {
-        closeModal();
+        closeModal('userModal');
         delete this.dataset.editingId;
     }
 });

@@ -72,7 +72,7 @@ async function AwaitFetchApi(url, method, data, skipAuth = false) {
                 showNotification("Sesi Anda telah berakhir. Silakan login kembali.", "error");
                 window.location.href = '/login';
             } else if (result.meta?.message) {
-                showNotification(result.meta.message, 'error');
+                showNotification(result.meta.message, 'info');
             }
         }
 
@@ -91,7 +91,7 @@ async function AwaitFetchApi(url, method, data, skipAuth = false) {
 function showNotification(message, type = 'success') {
     Swal.fire({
         text: message,
-        icon: type === 'success' ? 'success' : 'error',
+        icon: type,
         toast: true,
         position: 'top',
         showConfirmButton: false,
@@ -145,4 +145,91 @@ function showDeleteConfirmation(message = 'Apakah Anda yakin ingin menghapus dat
         confirmButtonText: 'Ya, Hapus!',
         cancelButtonText: 'Batal'
     });
+}
+
+/**
+ * Fungsi untuk membuka modal berdasarkan ID
+ * @param {string} modalId - ID dari modal yang akan dibuka
+ * @param {Function} callback - Callback yang akan dijalankan setelah modal dibuka (opsional)
+ */
+function openModal(modalId, callback = null) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('hidden');
+
+        // Set z-index to be very high
+        modal.style.zIndex = '9999999';
+        
+        // Execute callback if provided
+        if (typeof callback === 'function') {
+            callback();
+        }
+    } else {
+        console.error(`Modal dengan ID ${modalId} tidak ditemukan`);
+    }
+}
+
+/**
+ * Fungsi untuk menutup modal berdasarkan ID
+ * @param {string} modalId - ID dari modal yang akan ditutup
+ * @param {Function} callback - Callback yang akan dijalankan setelah modal ditutup (opsional)
+ */
+function closeModal(modalId, callback = null) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        
+        // Reset form jika ada di dalam modal
+        const form = modal.querySelector('form');
+        if (form) {
+            form.reset();
+        }
+        
+        // Execute callback if provided
+        if (typeof callback === 'function') {
+            callback();
+        }
+    } else {
+        console.error(`Modal dengan ID ${modalId} tidak ditemukan`);
+    }
+}
+
+/**
+ * Fungsi untuk menginisialisasi event listener tutup untuk semua modal
+ * Menambahkan event listener untuk tombol dengan attribute data-close-modal
+ */
+function initializeModalClosers() {
+    document.querySelectorAll('[data-close-modal]').forEach(button => {
+        const modalId = button.getAttribute('data-close-modal');
+        button.addEventListener('click', () => closeModal(modalId));
+    });
+
+    // Close modal when clicking outside (optional)
+    document.addEventListener('click', (e) => {
+        document.querySelectorAll('.modal-container').forEach(modal => {
+            if (e.target === modal) {
+                closeModal(modal.id);
+            }
+        });
+    });
+}
+
+// Inisialisasi event listener modal saat DOM siap
+document.addEventListener('DOMContentLoaded', () => {
+    initializeModalClosers();
+    
+    // Jika perlu inisialisasi lainnya tambahkan di sini
+});
+
+// Utility untuk membuat preview file
+function previewFile(url, previewModalId = 'previewModal', previewFrameId = 'filePreview') {
+    const modal = document.getElementById(previewModalId);
+    const preview = document.getElementById(previewFrameId);
+    
+    if (modal && preview) {
+        preview.src = url;
+        openModal(previewModalId);
+    } else {
+        console.error('Modal preview atau frame tidak ditemukan');
+    }
 }

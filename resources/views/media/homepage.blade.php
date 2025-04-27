@@ -44,6 +44,18 @@
     </div>
 </div>
 
+<!-- Modal Image Preview -->
+<div id="imageViewModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="relative max-w-4xl w-full">
+            <button data-close-modal="imageViewModal" class="absolute top-0 right-0 -mt-12 -mr-12 text-white text-2xl hover:text-gray-300 z-50">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="fullSizeImage" class="w-full object-contain max-h-[80vh]" src="" alt="Banner Preview">
+        </div>
+    </div>
+</div>
+
 <script>
 // Fungsi untuk memuat semua banner saat halaman dimuat
 async function loadBanners() {
@@ -60,6 +72,12 @@ async function loadBanners() {
     }
 }
 
+// Fungsi untuk menampilkan gambar dalam ukuran besar
+function viewFullImage(url) {
+    document.getElementById('fullSizeImage').src = url;
+    openModal('imageViewModal');
+}
+
 // Fungsi untuk merender banner ke dalam container
 function renderBanners(banners) {
     const container = document.getElementById('banner-container');
@@ -69,7 +87,10 @@ function renderBanners(banners) {
         const bannerElement = document.createElement('div');
         bannerElement.className = 'border rounded-lg p-2 relative';
         bannerElement.innerHTML = `
-            <img src="${banner.url}" alt="Banner ${banner.urutan}" class="w-full h-32 object-cover rounded">
+            <img src="${banner.url}" alt="Banner ${banner.urutan}" 
+                class="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                onclick="viewFullImage('${banner.url}')"
+                title="Klik untuk memperbesar">
             <div class="mt-2 flex justify-between items-center">
                 <span class="text-sm">Urutan: ${banner.urutan}</span>
                 <button class="text-red-500 hover:text-red-700" onclick="deleteBanner(${banner.id})">
@@ -105,7 +126,7 @@ async function uploadBanner() {
     }
     
     if (!formData.get('urutan')) {
-        showAlert('Masukkan urutan banner');
+        showAlert('Masukkan urutan banner', 'info');
         return;
     }
 

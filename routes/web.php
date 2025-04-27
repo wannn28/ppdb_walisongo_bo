@@ -23,9 +23,9 @@ Route::get('/jadwal', function () {
     return view('media.jadwal');
 })->name('jadwal');
 
-Route::get('/biaya-reguler', function () {
-    return view('media.biaya-reguler');
-})->name('biaya-reguler');
+Route::get('/biaya', function () {
+    return view('media.biaya');
+})->name('biaya');
 
 // Berkas Management Routes
 Route::get('/ketentuan-berkas', function () {
