@@ -41,12 +41,6 @@
               <span class="sidebar-text ml-3 transition-opacity duration-300">Jadwal</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a href="{{ route('biaya') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('biaya') ? 'bg-white/10' : '' }}">
-              <span class="nav-icon flex items-center justify-center min-w-[20px]">💰</span>
-              <span class="sidebar-text ml-3 transition-opacity duration-300">Biaya</span>
-            </a>
-          </li>
         </ul>
       </li>
 
@@ -77,6 +71,12 @@
               <span class="sidebar-text ml-3 transition-opacity duration-300">Detail User</span>
             </a>
           </li>
+          <li class="nav-item">
+            <a href="{{ route('pesan') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('pesan') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">✉️</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Pesan</span>
+            </a>
+          </li>
         </ul>
       </li>
 
@@ -87,6 +87,24 @@
             <a href="{{ route('detail-peserta') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('detail-peserta') ? 'bg-white/10' : '' }}">
               <span class="nav-icon flex items-center justify-center min-w-[20px]">📋</span>
               <span class="sidebar-text ml-3 transition-opacity duration-300">Detail Peserta</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('pekerjaan-ortu') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('pekerjaan-ortu') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">👨‍💼</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Pekerjaan Ortu</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('biodata-ortu') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('biodata-ortu') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">👪</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Biodata Ortu</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('jurusan') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('jurusan') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">🎓</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Kelas</span>
             </a>
           </li>
         </ul>
@@ -105,6 +123,12 @@
             <a href="{{ route('pengaturan-biaya') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('pengaturan-biaya') ? 'bg-white/10' : '' }}">
               <span class="nav-icon flex items-center justify-center min-w-[20px]">⚙️</span>
               <span class="sidebar-text ml-3 transition-opacity duration-300">Pengaturan Biaya</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('biaya') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('biaya') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">💰</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Biaya</span>
             </a>
           </li>
         </ul>

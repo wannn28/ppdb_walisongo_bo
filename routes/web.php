@@ -23,9 +23,21 @@ Route::get('/jadwal', function () {
     return view('media.jadwal');
 })->name('jadwal');
 
+Route::get('/jurusan', function () {
+    return view('media.jurusan');
+})->name('jurusan');
+
 Route::get('/biaya', function () {
     return view('media.biaya');
 })->name('biaya');
+
+Route::get('/pekerjaan-ortu', function () {
+    return view('media.pekerjaan-ortu');
+})->name('pekerjaan-ortu');
+
+Route::get('/biodata-ortu', function () {
+    return view('media.biodata-ortu');
+})->name('biodata-ortu');
 
 // Berkas Management Routes
 Route::get('/ketentuan-berkas', function () {
@@ -40,6 +52,10 @@ Route::get('/berkas-peserta', function () {
 Route::get('/detail-user', function () {
     return view('user.detail-user');
 })->name('detail-user');
+
+Route::get('/pesan', function () {
+    return view('user.pesan');
+})->name('pesan');
 
 // Peserta Management Routes
 Route::get('/detail-peserta', function () {

@@ -13,6 +13,7 @@ async function AwaitFetchApi(url, method, data, skipAuth = false) {
     const BASE_URL = window.API_BASE_URL 
     if (!skipAuth && !token) {
         print.warn("Token tidak ditemukan di localStorage.");
+        window.location.href = '/login';
         return Promise.resolve({ message: 'Token tidak ditemukan' });
     }
 
@@ -232,4 +233,37 @@ function previewFile(url, previewModalId = 'previewModal', previewFrameId = 'fil
     } else {
         console.error('Modal preview atau frame tidak ditemukan');
     }
+}
+
+/**
+ * Fungsi untuk memformat tanggal ke format Indonesia
+ * @param {string|Date} dateString - Tanggal yang akan diformat
+ * @param {boolean} withTime - Apakah akan menyertakan waktu
+ * @returns {string} - Tanggal yang sudah diformat
+ */
+function formatDate(dateString, withTime = false) {
+    if (!dateString) return '-';
+    
+    const date = new Date(dateString);
+    
+    // Cek apakah date valid
+    if (isNaN(date.getTime())) return '-';
+    
+    // Format tanggal Indonesia: dd MMM yyyy
+    const formattedDate = date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+    
+    // Jika withTime true, tambahkan waktu
+    if (withTime) {
+        const formattedTime = date.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        return `${formattedDate} ${formattedTime}`;
+    }
+    
+    return formattedDate;
 }

@@ -34,7 +34,6 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
@@ -52,7 +51,6 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
@@ -83,11 +81,6 @@
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Nominal</label>
                     <input type="number" id="nominal" name="nominal" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Keterangan</label>
-                    <textarea id="keterangan" name="keterangan" rows="3" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
                 </div>
                 
                 <div class="flex justify-end gap-2">
@@ -184,7 +177,7 @@
                 if (biayaList.length === 0) {
                     const emptyRow = document.createElement('tr');
                     emptyRow.innerHTML = `
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
                             Tidak ada data biaya pendaftaran
                         </td>
                     `;
@@ -197,7 +190,6 @@
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">${index + 1}</td>
                         <td class="px-6 py-4 whitespace-nowrap">Rp ${formatNumber(biaya.nominal)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${biaya.keterangan || 'Biaya pendaftaran'}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 Aktif
@@ -236,7 +228,7 @@
                 if (biayaList.length === 0) {
                     const emptyRow = document.createElement('tr');
                     emptyRow.innerHTML = `
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
                             Tidak ada data pengajuan biaya
                         </td>
                     `;
@@ -249,7 +241,6 @@
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">${index + 1}</td>
                         <td class="px-6 py-4 whitespace-nowrap">Rp ${formatNumber(biaya.nominal)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${biaya.keterangan || 'Pengajuan biaya'}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                 Aktif
@@ -284,7 +275,6 @@
                 document.getElementById('biayaType').value = type;
                 document.getElementById('selectBiayaType').value = type;
                 document.getElementById('nominal').value = biaya.nominal;
-                document.getElementById('keterangan').value = biaya.keterangan || '';
                 document.getElementById('biayaForm').setAttribute('data-id', id);
                 document.getElementById('modalTitle').textContent = type === 'pendaftaran' ? 'Edit Biaya Pendaftaran' : 'Edit Pengajuan Biaya';
                 openModal('biayaModal');
@@ -331,7 +321,6 @@
         const id = this.getAttribute('data-id');
         const biayaType = document.getElementById('biayaType').value;
         const nominal = document.getElementById('nominal').value;
-        const keterangan = document.getElementById('keterangan').value;
         
         if (!nominal) {
             showAlert('Nominal tidak boleh kosong', 'error');
@@ -341,10 +330,6 @@
         const data = {
             nominal: parseInt(nominal, 10)
         };
-        
-        if (keterangan.trim()) {
-            data.keterangan = keterangan;
-        }
         
         console.log('Sending data:', data);
         
