@@ -245,7 +245,7 @@
                     response = await AwaitFetchApi('admin/ketentuan-berkas', 'POST', data);
                 }
                 
-                if (response.meta?.code === 200) {
+                if (response.meta?.code === 200 || response.meta?.code === 201) {
                     showAlert(response.meta.message || 'Ketentuan berkas berhasil disimpan', 'success');
                     closeModal('berkasModal');
                     loadKetentuanBerkas();
