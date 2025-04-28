@@ -1,45 +1,44 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto px-4">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold">Manajemen Transaksi</h1>
-        <div>
-            <button id="btnAddTagihan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center mr-2">
-                <i class="fas fa-plus mr-2"></i> Tambah Tagihan
-            </button>
-        </div>
-    </div>
+<div class="container mx-auto px-4 py-6">
+    <h1 class="text-2xl font-bold mb-6">Transaksi</h1>
     
-    <!-- Tab navigation -->
-    <div class="mb-4 border-b border-gray-200">
-        <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
-            <li class="mr-2">
-                <button class="tab-button inline-block p-4 border-b-2 border-blue-500 rounded-t-lg active" data-target="transaksiTab">
-                    Transaksi
-                </button>
-            </li>
-            <li class="mr-2">
-                <button class="tab-button inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-target="tagihanTab">
-                    Tagihan
-                </button>
-            </li>
-        </ul>
-    </div>
+    <!-- Search and Filter Controls -->
+    <x-filter resetFunction="resetFilters">
+        <x-filter-text 
+            id="searchInput" 
+            label="Search" 
+            placeholder="Cari transaksi..." 
+            onChangeFunction="updateSearchFilter" />
+        
+        <x-filter-select 
+            id="statusFilter" 
+            label="Status" 
+            :options="[''=>'All Status', 'pending'=>'Pending', 'success'=>'Success', 'failed'=>'Failed']" 
+            onChangeFunction="updateStatusFilter" />
+        
+        <x-filter-date-range 
+            startId="startDate" 
+            endId="endDate" 
+            label="Date Range" 
+            onStartChangeFunction="updateStartDateFilter" 
+            onEndChangeFunction="updateEndDateFilter" />
+    </x-filter>
     
-    <!-- Transaksi Tab -->
-    <div id="transaksiTab" class="tab-content bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Transaksi Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden mt-4">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tagihan</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">VA/QR</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                    <x-sortable-header column="id" label="ID" sortFunction="handleSort" />
+                    <x-sortable-header column="user" label="User" sortFunction="handleSort" />
+                    <x-sortable-header column="tagihan" label="Tagihan" sortFunction="handleSort" />
+                    <x-sortable-header column="total" label="Total" sortFunction="handleSort" />
+                    <x-sortable-header column="status" label="Status" sortFunction="handleSort" />
+                    <x-sortable-header column="method" label="Metode" sortFunction="handleSort" />
+                    <x-sortable-header column="va" label="VA/QR" sortFunction="handleSort" />
+                    <x-sortable-header column="created_at" label="Waktu" sortFunction="handleSort" />
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -47,26 +46,8 @@
                 <!-- Data will be populated by JavaScript -->
             </tbody>
         </table>
-    </div>
-    
-    <!-- Tagihan Tab -->
-    <div id="tagihanTab" class="tab-content bg-white rounded-lg shadow-md overflow-hidden hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Tagihan</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="tagihanTableBody" class="bg-white divide-y divide-gray-200">
-                <!-- Data will be populated by JavaScript -->
-            </tbody>
-        </table>
+        <!-- Pagination -->
+        <x-pagination id="transaksiPagination" loadFunction="loadTransaksiPage" />
     </div>
 </div>
 
@@ -148,92 +129,81 @@
     </div>
 </div>
 
-<!-- Modal Tambah Tagihan -->
-<div id="tagihanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
-    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <div class="mt-3">
-            <h3 id="modalTitle" class="text-lg font-medium leading-6 text-gray-900 mb-4">Tambah Tagihan</h3>
-            <form id="tagihanForm">
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">User ID</label>
-                    <input type="text" id="user_id" name="user_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Nama Tagihan</label>
-                    <input type="text" id="nama_tagihan" name="nama_tagihan" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Total</label>
-                    <input type="number" id="total" name="total" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                </div>
-                
-                <div class="flex justify-end gap-2">
-                    <button type="button" data-close-modal="tagihanModal" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
-                        Batal
-                    </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
-                        Simpan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+<x-table-utils sortVarName="sortBy" directionVarName="sortDirection" />
 
-@endsection
-
-@push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // Load data
-        loadTransaksi();
-        loadTagihan();
-        
-        // Tab navigation
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const target = button.getAttribute('data-target');
-                
-                // Update active tab button
-                document.querySelectorAll('.tab-button').forEach(btn => {
-                    btn.classList.remove('active', 'border-blue-500');
-                    btn.classList.add('border-transparent');
-                });
-                button.classList.add('active', 'border-blue-500');
-                button.classList.remove('border-transparent');
-                
-                // Show target tab content, hide others
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
-                document.getElementById(target).classList.remove('hidden');
-            });
-        });
+    let currentPage = 1;
+    let sortBy = 'created_at';
+    let sortDirection = 'desc';
+    let filters = {
+        search: '',
+        status: '',
+        start_date: '',
+        end_date: ''
+    };
 
-        // Event listeners for modals
-        document.getElementById('btnAddTagihan').addEventListener('click', () => {
-            document.getElementById('tagihanForm').reset();
-            openModal('tagihanModal');
-        });
-        
-        // Close modal buttons
-        document.querySelectorAll('[data-close-modal]').forEach(button => {
-            button.addEventListener('click', () => {
-                const modalId = button.getAttribute('data-close-modal');
-                closeModal(modalId);
-            });
-        });
-        
-        // Form submission
-        document.getElementById('tagihanForm').addEventListener('submit', handleTagihanSubmit);
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+        loadTransaksi();
     });
 
+    // Filter update functions
+    function updateSearchFilter(value) {
+        filters.search = value;
+        loadTransaksi();
+    }
+    
+    function updateStatusFilter(value) {
+        filters.status = value;
+        loadTransaksi();
+    }
+    
+    function updateStartDateFilter(value) {
+        filters.start_date = value;
+        loadTransaksi();
+    }
+    
+    function updateEndDateFilter(value) {
+        filters.end_date = value;
+        loadTransaksi();
+    }
+    
+    function resetFilters() {
+        filters = {
+            search: '',
+            status: '',
+            start_date: '',
+            end_date: ''
+        };
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+        loadTransaksi();
+    }
+    
+    // Sort function
+    function handleSort(column) {
+        handleSortGeneric(column, loadTransaksi);
+    }
+    
+    // Pagination function
+    function loadTransaksiPage(page) {
+        currentPage = page;
+        loadTransaksi();
+    }
+
+    // Main data loading function
     async function loadTransaksi() {
         try {
-            const response = await AwaitFetchApi('admin/transaksi', 'GET');
-            console.log('API Response - Transaksi:', response);
+            const params = new URLSearchParams({
+                page: currentPage,
+                sort_by: sortBy,
+                order_by: sortDirection,
+                ...filters
+            });
+
+            const response = await AwaitFetchApi(`admin/transaksi?${params}`, 'GET');
             
             const tableBody = document.getElementById('transaksiTableBody');
             tableBody.innerHTML = '';
@@ -266,7 +236,13 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">${transaksi.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${transaksi.user ? transaksi.user.name : '-'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${transaksi.user ? 
+                          `<div class="font-medium">${transaksi.user.peserta ? transaksi.user.peserta.nama : '-'}</div>
+                           <div class="text-xs text-gray-500">ID: ${transaksi.user.id || '-'}</div>
+                           <div class="text-xs text-gray-500">${transaksi.user.no_telp || '-'}</div>` 
+                          : '-'}
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">${transaksi.tagihan ? transaksi.tagihan.nama_tagihan : '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap">${formatRupiah(transaksi.total)}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -288,72 +264,33 @@
                 `;
                 tableBody.appendChild(row);
             });
+            
+            // Update pagination
+            updatePaginationElements(response.pagination, loadTransaksiPage);
+            updateSortIndicators(sortBy, sortDirection);
         } catch (error) {
             console.error('Error:', error);
             showAlert('Terjadi kesalahan saat memuat data transaksi', 'error');
         }
     }
+
+    // Helper functions
+    function formatRupiah(angka) {
+        if (angka === null || angka === undefined) return '-';
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(angka);
+    }
     
-    async function loadTagihan() {
-        try {
-            const response = await AwaitFetchApi('admin/tagihan', 'GET');
-            console.log('API Response - Tagihan:', response);
-            
-            const tableBody = document.getElementById('tagihanTableBody');
-            tableBody.innerHTML = '';
-            
-            if (!response.data || response.data.length === 0) {
-                const emptyRow = document.createElement('tr');
-                emptyRow.innerHTML = `
-                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                        Tidak ada data tagihan
-                    </td>
-                `;
-                tableBody.appendChild(emptyRow);
-                return;
-            }
-            
-            // Check if data is in response.data or response.data.data based on API structure
-            const tagihanList = Array.isArray(response.data) ? response.data : (response.data.data || []);
-            
-            tagihanList.forEach((tagihan) => {
-                // Define status color based on status value
-                let statusClass = 'bg-gray-100 text-gray-800';
-                if (tagihan.status === 'paid') {
-                    statusClass = 'bg-green-100 text-green-800';
-                } else if (tagihan.status === 'pending') {
-                    statusClass = 'bg-yellow-100 text-yellow-800';
-                } else if (tagihan.status === 'failed' || tagihan.status === 'expired') {
-                    statusClass = 'bg-red-100 text-red-800';
-                }
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">${tagihan.id}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${tagihan.user ? tagihan.user.name : '-'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${tagihan.nama_tagihan}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${formatRupiah(tagihan.total)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
-                            ${tagihan.status || 'pending'}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div>${tagihan.created_at ? new Date(tagihan.created_at).toLocaleTimeString() : '-'}</div>
-                        <div class="text-sm text-gray-500">${tagihan.created_at ? formatDate(tagihan.created_at) : '-'}</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewTagihanDetail(${tagihan.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
-        } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat data tagihan', 'error');
-        }
+    function formatDate(date) {
+        if (!date) return '-';
+        return new Date(date).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        });
     }
     
     async function viewTransaksiDetail(id) {
@@ -388,9 +325,33 @@
                 
                 document.getElementById('detail-created').textContent = transaksi.created_at ? new Date(transaksi.created_at).toLocaleString() : '-';
                 document.getElementById('detail-updated').textContent = transaksi.updated_at ? new Date(transaksi.updated_at).toLocaleString() : '-';
-                document.getElementById('detail-userid').textContent = transaksi.user_id;
+                document.getElementById('detail-userid').textContent = transaksi.user_id || (transaksi.user ? transaksi.user.id : '-');
                 
-                openModal('detailModal');
+                // Add peserta name to the modal
+                const detailInfo = document.querySelector('.mt-6 .grid');
+                if (!document.getElementById('detail-peserta-name')) {
+                    const pesertaDiv = document.createElement('div');
+                    pesertaDiv.innerHTML = `
+                        <span>Nama Peserta:</span>
+                        <p id="detail-peserta-name" class="font-medium">-</p>
+                    `;
+                    detailInfo.insertBefore(pesertaDiv, detailInfo.firstChild);
+                }
+                document.getElementById('detail-peserta-name').textContent = 
+                    transaksi.user && transaksi.user.peserta ? transaksi.user.peserta.nama : '-';
+                
+                // Add phone number to the modal
+                if (!document.getElementById('detail-phone')) {
+                    const phoneDiv = document.createElement('div');
+                    phoneDiv.innerHTML = `
+                        <span>Phone Number:</span>
+                        <p id="detail-phone" class="font-medium">-</p>
+                    `;
+                    detailInfo.appendChild(phoneDiv);
+                }
+                document.getElementById('detail-phone').textContent = transaksi.user && transaksi.user.no_telp ? transaksi.user.no_telp : '-';
+                
+                document.getElementById('detailModal').classList.remove('hidden');
             } else {
                 showAlert(response.meta?.message || 'Gagal memuat detail transaksi', 'error');
             }
@@ -399,130 +360,22 @@
             showAlert('Terjadi kesalahan saat memuat detail transaksi', 'error');
         }
     }
-    
-    async function viewTagihanDetail(id) {
-        try {
-            const response = await AwaitFetchApi(`admin/tagihan/${id}`, 'GET');
-            if (response.meta?.code === 200) {
-                const tagihan = response.data;
-                
-                document.getElementById('detailModal').querySelector('h3').textContent = 'Detail Tagihan';
-                document.getElementById('detail-id').textContent = tagihan.id;
-                document.getElementById('detail-ref').textContent = '-';
-                
-                const statusElement = document.getElementById('detail-status');
-                statusElement.textContent = tagihan.status || 'pending';
-                
-                // Update status badge color
-                statusElement.className = 'px-2 py-1 text-xs rounded';
-                if (tagihan.status === 'paid') {
-                    statusElement.classList.add('bg-green-100', 'text-green-800');
-                } else if (tagihan.status === 'pending') {
-                    statusElement.classList.add('bg-yellow-100', 'text-yellow-800');
-                } else if (tagihan.status === 'failed' || tagihan.status === 'expired') {
-                    statusElement.classList.add('bg-red-100', 'text-red-800');
-                } else {
-                    statusElement.classList.add('bg-gray-100', 'text-gray-800');
-                }
-                
-                document.getElementById('detail-total').textContent = formatRupiah(tagihan.total);
-                document.getElementById('detail-method').textContent = '-';
-                document.getElementById('detail-va').textContent = tagihan.va_number || '-';
-                document.getElementById('detail-qr').textContent = tagihan.transaction_qr_id || '-';
-                document.getElementById('detail-time').textContent = tagihan.created_time ? new Date(tagihan.created_time).toLocaleString() : '-';
-                
-                document.getElementById('detail-created').textContent = tagihan.created_at ? new Date(tagihan.created_at).toLocaleString() : '-';
-                document.getElementById('detail-updated').textContent = tagihan.updated_at ? new Date(tagihan.updated_at).toLocaleString() : '-';
-                document.getElementById('detail-userid').textContent = tagihan.user_id;
-                
-                openModal('detailModal');
-            } else {
-                showAlert(response.meta?.message || 'Gagal memuat detail tagihan', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat detail tagihan', 'error');
-        }
-    }
-    
-    async function handleTagihanSubmit(e) {
-        e.preventDefault();
-        
-        const user_id = document.getElementById('user_id').value;
-        const nama_tagihan = document.getElementById('nama_tagihan').value;
-        const total = document.getElementById('total').value;
-        
-        if (!user_id || !nama_tagihan || !total) {
-            showAlert('Semua field harus diisi', 'error');
-            return;
-        }
-        
-        const data = {
-            user_id: parseInt(user_id),
-            nama_tagihan,
-            total: parseInt(total)
-        };
-        
-        try {
-            const response = await AwaitFetchApi('admin/tagihan', 'POST', data);
-            
-            if (response.meta?.code === 201) {
-                showAlert(response.meta.message || 'Tagihan berhasil dibuat', 'success');
-                closeModal('tagihanModal');
-                loadTagihan();
-            } else {
-                showAlert(response.meta?.message || 'Gagal membuat tagihan', 'error');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat membuat tagihan', 'error');
-        }
-    }
-    
-    function viewDetail(id) {
-        document.getElementById('detailModal').classList.remove('hidden');
-        // Implementasi untuk mengambil dan menampilkan detail transaksi
-    }
-    
-    function openModal(modalId) {
-        document.getElementById(modalId).classList.remove('hidden');
-    }
 
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-    }
-    
     function closeDetailModal() {
         document.getElementById('detailModal').classList.add('hidden');
     }
-    
-    // Format currency
-    function formatRupiah(angka) {
-        if (angka === null || angka === undefined) return '-';
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(angka);
-    }
-    
-    // Format date
-    function formatDate(date) {
-        if (!date) return '-';
-        return new Date(date).toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric'
-        });
-    }
-    
+
     function showAlert(message, type = 'info') {
-        Swal.fire({
-            icon: type,
-            title: message,
-            showConfirmButton: false,
-            timer: 2000
-        });
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: type,
+                title: message,
+                showConfirmButton: false,
+                timer: 2000
+            });
+        } else {
+            alert(message);
+        }
     }
 </script>
-@endpush
+@endsection

@@ -5,10 +5,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">Manajemen Berkas Peserta</h1>
             <div class="flex gap-4">
-                <input type="text" id="searchInput" placeholder="Cari berkas..." class="border rounded-lg px-4 py-2 w-64">
-                <button onclick="searchBerkas()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
-                    <i class="fas fa-search mr-2"></i> Cari
-                </button>
+                <x-search placeholder="Cari berkas..." searchFunction="searchBerkas" additionalClasses="bg-transparent shadow-none p-0" />
             </div>
         </div>
 
@@ -16,27 +13,15 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('id')">
-                            ID <span id="sort-id"></span>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('peserta_id')">
-                            ID Peserta <span id="sort-peserta_id"></span>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('ketentuan_berkas_id')">
-                            Ketentuan Berkas <span id="sort-ketentuan_berkas_id"></span>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('nama_file')">
-                            Nama File <span id="sort-nama_file"></span>
-                        </th>
+                        <x-sortable-header column="id" label="ID" />
+                        <x-sortable-header column="peserta_id" label="ID Peserta" />
+                        <x-sortable-header column="ketentuan_berkas_id" label="Ketentuan Berkas" />
+                        <x-sortable-header column="nama_file" label="Nama File" />
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Preview
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('created_at')">
-                            Tanggal Upload <span id="sort-created_at"></span>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('updated_at')">
-                            Terakhir Update <span id="sort-updated_at"></span>
-                        </th>
+                        <x-sortable-header column="created_at" label="Tanggal Upload" />
+                        <x-sortable-header column="updated_at" label="Terakhir Update" />
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -44,11 +29,7 @@
                     <!-- Data akan dimasukkan lewat JS -->
                 </tbody>
             </table>
-            <div class="px-6 py-4">
-                <div id="pagination" class="flex justify-between items-center gap-2 mt-4">
-                    <!-- Tombol pagination akan di-generate lewat JavaScript -->
-                </div>
-            </div>
+            <x-pagination id="pagination" loadFunction="loadBerkasPeserta" />
         </div>
     </div>
 
@@ -91,6 +72,8 @@
             </div>
         </div>
     </div>
+    <x-table-utils />
+    
     <script>
         let sortBy = 'id';
         let sortDirection = 'asc';
@@ -100,13 +83,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadBerkasPeserta(1); // mulai dari halaman 1
-            
-            // Add event listener for search input
-            document.getElementById('searchInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchBerkas();
-                }
-            });
         });
 
         async function loadBerkasPeserta(page = 1) {
@@ -155,8 +131,8 @@
                     }
 
                     // Render pagination and update sort indicators
-                    renderPagination(response.pagination);
-                    updateSortIndicators();
+                    updatePaginationElements(response.pagination, loadBerkasPeserta);
+                    updateSortIndicators(sortBy, sortDirection);
                 }
             } catch (error) {
                 console.error('Error loading berkas:', error);
@@ -165,78 +141,13 @@
         }
 
         function handleSort(column) {
-            if (sortBy === column) {
-                // Toggle direction if same column
-                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                // Default to ascending for new column
-                sortBy = column;
-                sortDirection = 'asc';
-            }
-            
-            currentPage = 1; // Reset to first page when sorting
-            loadBerkasPeserta(currentPage);
-        }
-
-        function updateSortIndicators() {
-            // Clear all sort indicators
-            document.querySelectorAll('[id^="sort-"]').forEach(el => {
-                el.innerHTML = '';
-            });
-            
-            // Set indicator for current sort column
-            const indicator = sortDirection === 'asc' ? '↑' : '↓';
-            const element = document.getElementById(`sort-${sortBy}`);
-            if (element) {
-                element.innerHTML = indicator;
-            }
+            handleSortGeneric(column, loadBerkasPeserta);
         }
 
         function searchBerkas() {
             searchTerm = document.getElementById('searchInput').value.trim();
             currentPage = 1; // Reset to first page when searching
             loadBerkasPeserta(currentPage);
-        }
-
-        function renderPagination(pagination) {
-            const container = document.getElementById('pagination');
-            container.innerHTML = '';
-
-            // Left side - Page info
-            const infoDiv = document.createElement('div');
-            infoDiv.className = 'flex items-center gap-4';
-            
-            const info = document.createElement('span');
-            info.className = 'text-sm text-gray-700';
-            info.innerHTML = `Menampilkan halaman <span class="font-medium">${pagination.page}</span> dari <span class="font-medium">${pagination.total_pages}</span>`;
-            infoDiv.appendChild(info);
-            
-            container.appendChild(infoDiv);
-
-            // Right side - Navigation buttons
-            const navDiv = document.createElement('div');
-            navDiv.className = 'flex gap-2';
-
-            // Previous button
-            const prev = document.createElement('button');
-            prev.innerHTML = 'Sebelumnya';
-            prev.className = `px-3 py-1 border rounded-md ${pagination.page === 1 ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-100'}`;
-            prev.disabled = pagination.page === 1;
-            prev.onclick = () => pagination.page > 1 && loadBerkasPeserta(pagination.page - 1);
-            navDiv.appendChild(prev);
-
-            // Next button
-            const next = document.createElement('button');
-            next.innerHTML = 'Selanjutnya';
-            next.className = `px-3 py-1 border rounded-md ${pagination.page === pagination.total_pages ? 'bg-gray-100 cursor-not-allowed' : 'hover:bg-gray-100'}`;
-            next.disabled = pagination.page === pagination.total_pages;
-            next.onclick = () => pagination.page < pagination.total_pages && loadBerkasPeserta(pagination.page + 1);
-            navDiv.appendChild(next);
-
-            container.appendChild(navDiv);
-            
-            // Update current page variable
-            currentPage = pagination.page;
         }
 
         function previewFile(url) {

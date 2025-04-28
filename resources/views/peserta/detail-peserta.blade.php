@@ -5,10 +5,7 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Detail Peserta PPDB</h1>
         <div class="flex gap-4">
-            <input type="text" id="searchInput" placeholder="Cari Peserta..." class="border rounded-lg px-4 py-2 w-64">
-            <button onclick="searchPeserta()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
-                <i class="fas fa-search mr-2"></i> Cari
-            </button>
+            <x-search placeholder="Cari Peserta..." searchFunction="searchPeserta" additionalClasses="bg-transparent shadow-none p-0" />
             <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal('tambahModal')">
                 <i class="fas fa-plus mr-2"></i> Tambah Peserta
             </button>
@@ -18,30 +15,16 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('id')">
-                        ID <span id="sort-id"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('nisn')">
-                        NISN <span id="sort-nisn"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('nis')">
-                        NIS <span id="sort-nis"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('nama')">
-                        Nama <span id="sort-nama"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('tempat_lahir')">
-                        TTL <span id="sort-tempat_lahir"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('jenis_kelamin')">
-                        Gender <span id="sort-jenis_kelamin"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('no_telp')">
-                        Kontak <span id="sort-no_telp"></span>
-                    </th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer" onclick="handleSort('jenjang_sekolah')">
-                        Jenjang <span id="sort-jenjang_sekolah"></span>
-                    </th>
+                    <x-sortable-header column="id" label="ID" />
+                    <x-sortable-header column="nisn" label="NISN" />
+                    <x-sortable-header column="nis" label="NIS" />
+                    <x-sortable-header column="nama" label="Nama" />
+                    <x-sortable-header column="tempat_lahir" label="TTL" />
+                    <x-sortable-header column="jenis_kelamin" label="Gender" />
+                    <x-sortable-header column="no_telp" label="Kontak" />
+                    <x-sortable-header column="jenjang_sekolah" label="Jenjang" />
+                    <x-sortable-header column="status" label="Status" />
+                    <x-sortable-header column="penghasilan_ortu" label="Penghasilan Ortu" />
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -51,26 +34,10 @@
         </table>
         
         <!-- Pagination Component -->
-        <div class="px-6 py-4 bg-white border-t border-gray-200">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Menampilkan <span id="pagination-start">1</span> sampai <span id="pagination-end">10</span> dari <span id="pagination-total">0</span> data
-                </div>
-                <div class="flex space-x-2">
-                    <button id="prev-page" class="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-chevron-left mr-1"></i> Sebelumnya
-                    </button>
-                    <div id="page-numbers" class="flex space-x-1">
-                        <!-- Page numbers will be inserted here -->
-                    </div>
-                    <button id="next-page" class="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Selanjutnya <i class="fas fa-chevron-right ml-1"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
+        <x-pagination loadFunction="loadPesertaData" />
     </div>
 </div>
+
 <!-- Modal Tambah Peserta -->
 <div id="tambahModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -146,6 +113,19 @@
                         <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
                         <p class="mt-1" id="detail-telp">-</p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        <div class="mt-1 flex items-center gap-2">
+                            <select id="detail-status" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <button onclick="updatePesertaStatus()" class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                <i class="fas fa-save"></i> Simpan
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -218,6 +198,8 @@
     </div>
 </div>
 
+<x-table-utils />
+
 <script>
 let currentPage = 1;
 let totalPages = 1;
@@ -225,6 +207,8 @@ let sortBy = 'id';
 let sortDirection = 'asc';
 let searchTerm = '';
 let perPage = 10;
+let currentPesertaId = null;
+let allPeserta = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPesertaData();
@@ -252,11 +236,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadPesertaData(page = 1) {
     try {
-        const url = `admin/pesertas?page=${page}&per_page=${perPage}&sort_by=${sortBy}&order_by=${sortDirection}${searchTerm ? '&search=' + searchTerm : ''}`;
+        let sortField = sortBy;
+        let clientSideSorting = false;
+        
+        // For nested relations like penghasilan_ortu, use client-side sorting
+        if (sortBy === 'penghasilan_ortu') {
+            // Use a standard field for the API call since we'll sort client-side
+            sortField = 'id';
+            clientSideSorting = true;
+        }
+        
+        const url = `admin/pesertas?page=${page}&per_page=${perPage}&sort_by=${sortField}&order_by=${sortDirection}${searchTerm ? '&search=' + searchTerm : ''}`;
         const response = await AwaitFetchApi(url, 'GET');
         
         if(response?.data) {
-            renderPesertaTable(response.data);
+            let dataToRender = response.data;
+            
+            // Perform client-side sorting for penghasilan_ortu if needed
+            if (clientSideSorting && sortBy === 'penghasilan_ortu') {
+                dataToRender = sortPesertaByPenghasilanOrtu(dataToRender, sortDirection);
+            }
+            
+            renderPesertaTable(dataToRender);
             updatePagination(response.pagination);
             updateSortIndicators();
         }
@@ -273,7 +274,7 @@ function renderPesertaTable(pesertas) {
     if (pesertas.length === 0) {
         const emptyRow = `
             <tr>
-                <td colspan="9" class="px-6 py-4 text-center text-gray-500">
+                <td colspan="10" class="px-6 py-4 text-center text-gray-500">
                     Tidak ada data peserta yang ditemukan
                 </td>
             </tr>
@@ -283,6 +284,8 @@ function renderPesertaTable(pesertas) {
     }
     
     pesertas.forEach((peserta) => {
+        const statusBadge = getStatusBadge(peserta.status);
+        
         const row = `
             <tr>
                 <td class="px-6 py-4 whitespace-nowrap">${peserta.id}</td>
@@ -308,6 +311,12 @@ function renderPesertaTable(pesertas) {
                     </span>
                     ${peserta.jurusan1 ? `<div class="text-xs mt-1">Kelas : ${peserta.jurusan1.jurusan || '-'}</div>` : ''}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${statusBadge}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${getPenghasilanOrtu(peserta)}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewDetail(${peserta.id})">
                         <i class="fas fa-eye"></i>
@@ -320,6 +329,51 @@ function renderPesertaTable(pesertas) {
         `;
         tbody.innerHTML += row;
     });
+}
+
+function getStatusBadge(status) {
+    if (!status) return '<span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">Pending</span>';
+    
+    switch(status.toLowerCase()) {
+        case 'approved':
+            return '<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">Approved</span>';
+        case 'rejected':
+            return '<span class="px-2 py-1 text-xs rounded bg-red-100 text-red-800">Rejected</span>';
+        case 'pending':
+        default:
+            return '<span class="px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">Pending</span>';
+    }
+}
+
+function getPenghasilanOrtu(peserta) {
+    // If penghasilan_ortu is directly available on peserta object
+    if (peserta.penghasilan_ortu) {
+        if (typeof peserta.penghasilan_ortu === 'object') {
+            return `<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+                ${peserta.penghasilan_ortu.penghasilan || '-'}
+            </span>`;
+        } else {
+            return `<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+                ${peserta.penghasilan_ortu}
+            </span>`;
+        }
+    }
+    
+    // If penghasilan_ortu is inside biodata_ortu object
+    if (peserta.biodata_ortu && peserta.biodata_ortu.penghasilan_ortu) {
+        if (typeof peserta.biodata_ortu.penghasilan_ortu === 'object') {
+            return `<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+                ${peserta.biodata_ortu.penghasilan_ortu.penghasilan || '-'}
+            </span>`;
+        } else {
+            return `<span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+                ${peserta.biodata_ortu.penghasilan_ortu}
+            </span>`;
+        }
+    }
+    
+    // Default value if not found
+    return '<span class="px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">-</span>';
 }
 
 function handleSort(column) {
@@ -454,6 +508,7 @@ async function viewDetail(id) {
         const response = await AwaitFetchApi(`admin/peserta/${id}`, 'GET');
         if (response?.data) {
             const peserta = response.data;
+            currentPesertaId = peserta.id;
             
             // Populate basic data
             document.getElementById('detail-id').textContent = peserta.id || '-';
@@ -463,6 +518,14 @@ async function viewDetail(id) {
             document.getElementById('detail-gender').textContent = peserta.jenis_kelamin || '-';
             document.getElementById('detail-alamat').textContent = peserta.alamat || '-';
             document.getElementById('detail-telp').textContent = peserta.no_telp || '-';
+            
+            // Set the status dropdown value
+            const statusDropdown = document.getElementById('detail-status');
+            if (peserta.status) {
+                statusDropdown.value = peserta.status.toLowerCase();
+            } else {
+                statusDropdown.value = 'pending'; // Default value
+            }
             
             // Populate education data
             document.getElementById('detail-jenjang').textContent = peserta.jenjang_sekolah || '-';
@@ -477,17 +540,6 @@ async function viewDetail(id) {
             } else {
                 document.getElementById('detail-jurusan1').textContent = '-';
             }
-            
-            // Handle jurusan2 data (could be object with nested properties)
-            // if (peserta.jurusan2) {
-            //     if (typeof peserta.jurusan2 === 'object') {
-            //         document.getElementById('detail-jurusan2').textContent = peserta.jurusan2.jurusan || '-';
-            //     } else {
-            //         document.getElementById('detail-jurusan2').textContent = peserta.jurusan2 || '-';
-            //     }
-            // } else {
-            //     document.getElementById('detail-jurusan2').textContent = '-';
-            // }
             
             // Populate parent data if available
             if (peserta.biodata_ortu) {
@@ -572,6 +624,29 @@ async function deletePeserta(id) {
     }
 }
 
+async function updatePesertaStatus() {
+    if (!currentPesertaId) {
+        showAlert('ID Peserta tidak valid', 'error');
+        return;
+    }
+    
+    const status = document.getElementById('detail-status').value;
+    
+    try {
+        const response = await AwaitFetchApi(`admin/peserta/${currentPesertaId}`, 'PUT', { status });
+        
+        if (response.meta?.code === 200) {
+            showAlert('Status peserta berhasil diperbarui', 'success');
+            loadPesertaData(currentPage); // Refresh the table
+        } else {
+            showAlert(`Gagal memperbarui status: ${response.meta?.message}`, 'error');
+        }
+    } catch (error) {
+        console.error('Error updating peserta status:', error);
+        showAlert('Terjadi kesalahan saat memperbarui status peserta', 'error');
+    }
+}
+
 // Form submission
 document.getElementById('pesertaForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -593,5 +668,42 @@ document.getElementById('pesertaForm').addEventListener('submit', async function
         showAlert('Terjadi kesalahan saat menambahkan peserta', 'error');
     }
 });
+
+// Helper function to sort peserta data by penghasilan_ortu
+function sortPesertaByPenghasilanOrtu(data, direction) {
+    return [...data].sort((a, b) => {
+        // Extract penghasilan values
+        const valueA = getPenghasilanValue(a);
+        const valueB = getPenghasilanValue(b);
+        
+        // Compare for sorting
+        if (valueA === '-' && valueB !== '-') return direction === 'asc' ? -1 : 1;
+        if (valueA !== '-' && valueB === '-') return direction === 'asc' ? 1 : -1;
+        if (valueA === '-' && valueB === '-') return 0;
+        
+        // Simple string comparison
+        const comparison = valueA.localeCompare(valueB);
+        return direction === 'asc' ? comparison : -comparison;
+    });
+}
+
+// Helper to extract penghasilan value from a peserta object
+function getPenghasilanValue(peserta) {
+    if (peserta.penghasilan_ortu) {
+        if (typeof peserta.penghasilan_ortu === 'object') {
+            return peserta.penghasilan_ortu.penghasilan || '-';
+        }
+        return peserta.penghasilan_ortu;
+    }
+    
+    if (peserta.biodata_ortu && peserta.biodata_ortu.penghasilan_ortu) {
+        if (typeof peserta.biodata_ortu.penghasilan_ortu === 'object') {
+            return peserta.biodata_ortu.penghasilan_ortu.penghasilan || '-';
+        }
+        return peserta.biodata_ortu.penghasilan_ortu;
+    }
+    
+    return '-';
+}
 </script>
 @endsection

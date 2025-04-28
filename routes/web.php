@@ -35,6 +35,10 @@ Route::get('/pekerjaan-ortu', function () {
     return view('media.pekerjaan-ortu');
 })->name('pekerjaan-ortu');
 
+Route::get('/penghasilan-ortu', function () {
+    return view('media.penghasilan-ortu');
+})->name('penghasilan-ortu');
+
 Route::get('/biodata-ortu', function () {
     return view('media.biodata-ortu');
 })->name('biodata-ortu');
@@ -63,13 +67,23 @@ Route::get('/detail-peserta', function () {
 })->name('detail-peserta');
 
 // Transaksi Management Routes
-Route::get('/transaksi-user', function () {
+Route::get('/transaksi', function () {
     return view('transaksi.transaksi-user');
-})->name('transaksi-user');
+})->name('transaksi');
+
+// Tagihan Management Routes
+Route::get('/tagihan', function () {
+    return view('tagihan.tagihan-user');
+})->name('tagihan');
 
 Route::get('/pengaturan-biaya', function () {
     return view('transaksi.pengaturan-biaya');
 })->name('pengaturan-biaya');
+
+// Peringkat routes
+Route::get('/peringkat', function () {
+    return view('transaksi.peringkat');
+})->name('peringkat');
 
 // Logout Route (dummy)
 Route::post('/logout', function () {

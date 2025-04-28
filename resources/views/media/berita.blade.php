@@ -25,18 +25,6 @@
                     <input type="number" id="urutan" name="urutan" min="1" 
                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2" for="jenjang">
-                        Jenjang Sekolah
-                    </label>
-                    <select id="jenjang" name="jenjang_sekolah" 
-                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <option value="SD">SD</option>
-                        <option value="SMP">SMP</option>
-                        <option value="SMA">SMA</option>
-                    </select>
-                </div>
                 
                 <div class="border-dashed border-2 border-gray-300 rounded-lg p-6 text-center">
                     <input type="file" id="berita-upload" name="image" class="hidden" accept="image/*">
@@ -107,7 +95,6 @@ function renderBerita(beritas) {
                 onclick="viewFullImage('${berita.url}')"
                 title="Klik untuk memperbesar">
             <div class="mt-2">
-                <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">${berita.jenjang_sekolah}</span>
                 <p class="text-sm mt-1">Urutan: ${berita.urutan}</p>
                 <p class="text-xs text-gray-500">ID: ${berita.id}</p>
             </div>
@@ -196,7 +183,6 @@ async function editBerita(id) {
         if (response.meta?.code === 200) {
             const berita = response.data;
             document.getElementById('urutan').value = berita.urutan;
-            document.getElementById('jenjang').value = berita.jenjang_sekolah;
             // Tampilkan gambar preview jika ada
             if (berita.url) {
                 document.getElementById('imagePreview').src = berita.url;

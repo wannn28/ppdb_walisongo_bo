@@ -96,6 +96,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="{{ route('penghasilan-ortu') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('penghasilan-ortu') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">💰</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Penghasilan Ortu</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="{{ route('biodata-ortu') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('biodata-ortu') ? 'bg-white/10' : '' }}">
               <span class="nav-icon flex items-center justify-center min-w-[20px]">👪</span>
               <span class="sidebar-text ml-3 transition-opacity duration-300">Biodata Ortu</span>
@@ -114,9 +120,21 @@
         <div class="px-4 text-gray-400 uppercase text-xs sidebar-text transition-opacity duration-300">Transaksi Management</div>
         <ul class="mt-1">
           <li class="nav-item">
-            <a href="{{ route('transaksi-user') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('transaksi-user') ? 'bg-white/10' : '' }}">
+            <a href="{{ route('transaksi') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('transaksi') ? 'bg-white/10' : '' }}">
               <span class="nav-icon flex items-center justify-center min-w-[20px]">💳</span>
-              <span class="sidebar-text ml-3 transition-opacity duration-300">Transaksi User</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Transaksi</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('tagihan') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('tagihan') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">📃</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Tagihan</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ route('peringkat') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('peringkat') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">🏆</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Peringkat</span>
             </a>
           </li>
           <li class="nav-item">
