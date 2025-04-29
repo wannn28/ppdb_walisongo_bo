@@ -78,6 +78,35 @@
                     </select>
                 </div>
                 
+                <div id="pengajuanFields" class="hidden">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Jenjang Sekolah</label>
+                        <select id="jenjangSekolah" name="jenjang_sekolah" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="">Pilih Jenjang</option>
+                            <option value="SD">SD</option>
+                            <option value="SMP">SMP</option>
+                            <option value="SMA">SMA</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Jenis Kelas</label>
+                        <select id="jenisKelas" name="jenis_kelas" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="">Pilih Jenis Kelas</option>
+                            <option value="reguler">Reguler</option>
+                            <option value="unggulan">Unggulan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Kelas</label>
+                        <select id="kelas" name="kelas" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="">Pilih Kelas</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+                
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Nominal</label>
                     <input type="number" id="nominal" name="nominal" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
@@ -101,6 +130,7 @@
 @push('scripts')
 <script>
     let currentTab = 'biayaPendaftaran';
+    let jurusanList = []; // To store jurusan data
     
     document.addEventListener('DOMContentLoaded', () => {
         loadBiayaPendaftaran();
@@ -142,14 +172,39 @@
             document.getElementById('biayaType').value = biayaType;
             document.getElementById('selectBiayaType').value = biayaType;
             
+            // Fetch jurusan data when opening modal for pengajuan
+            if (biayaType === 'pengajuan') {
+                fetchJurusanData();
+                document.getElementById('pengajuanFields').classList.remove('hidden');
+            } else {
+                document.getElementById('pengajuanFields').classList.add('hidden');
+            }
+            
             document.getElementById('modalTitle').textContent = currentTab === 'biayaPendaftaran' ? 'Tambah Biaya Pendaftaran' : 'Tambah Pengajuan Biaya';
             openModal('biayaModal');
         });
         
         // Type selector in modal
         document.getElementById('selectBiayaType').addEventListener('change', function() {
-            document.getElementById('biayaType').value = this.value;
-            document.getElementById('modalTitle').textContent = this.value === 'pendaftaran' ? 'Tambah Biaya Pendaftaran' : 'Tambah Pengajuan Biaya';
+            const biayaType = this.value;
+            document.getElementById('biayaType').value = biayaType;
+            document.getElementById('modalTitle').textContent = biayaType === 'pendaftaran' ? 'Tambah Biaya Pendaftaran' : 'Tambah Pengajuan Biaya';
+            
+            // Show/hide pengajuan-specific fields
+            if (biayaType === 'pengajuan') {
+                fetchJurusanData();
+                document.getElementById('pengajuanFields').classList.remove('hidden');
+            } else {
+                document.getElementById('pengajuanFields').classList.add('hidden');
+            }
+        });
+        
+        // Jenjang & Jenis Kelas change handlers
+        document.getElementById('jenisKelas').addEventListener('change', updateKelasOptions);
+        document.getElementById('jenjangSekolah').addEventListener('change', () => {
+            // Reset jenis kelas when jenjang changes
+            document.getElementById('jenisKelas').value = '';
+            document.getElementById('kelas').innerHTML = '<option value="">Pilih Kelas</option>';
         });
         
         // Close modal buttons
@@ -164,10 +219,25 @@
         document.getElementById('biayaForm').addEventListener('submit', handleFormSubmit);
     });
     
+    // Fetch jurusan data from API
+    async function fetchJurusanData() {
+        try {
+            const response = await AwaitFetchApi('admin/jurusan', 'GET');
+            print.log('API Response - Jurusan:', response);
+            if (response.meta?.code === 200) {
+                jurusanList = response.data || [];
+            } else {
+                print.error('Failed to fetch jurusan data:', response.meta?.message);
+            }
+        } catch (error) {
+            print.error('Error fetching jurusan data:', error);
+        }
+    }
+    
     async function loadBiayaPendaftaran() {
         try {
             const response = await AwaitFetchApi('admin/biaya-pendaftaran', 'GET');
-            console.log('API Response - Biaya Pendaftaran:', response);
+            print.log('API Response - Biaya Pendaftaran:', response);
             if (response.meta?.code === 200) {
                 const biayaList = response.data || [];
                 const tableBody = document.getElementById('biayaPendaftaranTableBody');
@@ -210,7 +280,7 @@
                 showAlert(response.meta?.message || 'Gagal memuat data biaya pendaftaran', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
+            print.error('Error:', error);
             showAlert('Terjadi kesalahan saat memuat data biaya pendaftaran', 'error');
         }
     }
@@ -218,7 +288,7 @@
     async function loadPengajuanBiaya() {
         try {
             const response = await AwaitFetchApi('admin/pengajuan-biaya', 'GET');
-            console.log('API Response - Pengajuan Biaya:', response);
+            print.log('API Response - Pengajuan Biaya:', response);
             if (response.meta?.code === 200) {
                 const biayaList = response.data || [];
                 const tableBody = document.getElementById('pengajuanBiayaTableBody');
@@ -243,7 +313,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">Rp ${formatNumber(biaya.nominal)}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Aktif
+                                ${biaya.jenjang_sekolah || ''} - ${biaya.jenis_kelas || ''} - ${biaya.kelas || ''}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -261,7 +331,7 @@
                 showAlert(response.meta?.message || 'Gagal memuat data pengajuan biaya', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
+            print.error('Error:', error);
             showAlert('Terjadi kesalahan saat memuat data pengajuan biaya', 'error');
         }
     }
@@ -275,6 +345,25 @@
                 document.getElementById('biayaType').value = type;
                 document.getElementById('selectBiayaType').value = type;
                 document.getElementById('nominal').value = biaya.nominal;
+                
+                // Set pengajuan fields if relevant
+                if (type === 'pengajuan') {
+                    await fetchJurusanData(); // Fetch jurusan data before setting fields
+                    document.getElementById('pengajuanFields').classList.remove('hidden');
+                    if (biaya.jenjang_sekolah) {
+                        document.getElementById('jenjangSekolah').value = biaya.jenjang_sekolah;
+                    }
+                    if (biaya.jenis_kelas) {
+                        document.getElementById('jenisKelas').value = biaya.jenis_kelas;
+                        updateKelasOptions();
+                    }
+                    if (biaya.kelas) {
+                        document.getElementById('kelas').value = biaya.kelas;
+                    }
+                } else {
+                    document.getElementById('pengajuanFields').classList.add('hidden');
+                }
+                
                 document.getElementById('biayaForm').setAttribute('data-id', id);
                 document.getElementById('modalTitle').textContent = type === 'pendaftaran' ? 'Edit Biaya Pendaftaran' : 'Edit Pengajuan Biaya';
                 openModal('biayaModal');
@@ -282,7 +371,7 @@
                 showAlert(response.meta?.message || `Gagal memuat detail ${type === 'pendaftaran' ? 'biaya pendaftaran' : 'pengajuan biaya'}`, 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
+            print.error('Error:', error);
             showAlert(`Terjadi kesalahan saat memuat detail ${type === 'pendaftaran' ? 'biaya pendaftaran' : 'pengajuan biaya'}`, 'error');
         }
     }
@@ -310,7 +399,7 @@
                 showAlert(response.meta?.message || `Gagal menghapus ${type === 'pendaftaran' ? 'biaya pendaftaran' : 'pengajuan biaya'}`, 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
+            print.error('Error:', error);
             showAlert(`Terjadi kesalahan saat menghapus ${type === 'pendaftaran' ? 'biaya pendaftaran' : 'pengajuan biaya'}`, 'error');
         }
     }
@@ -331,7 +420,33 @@
             nominal: parseInt(nominal, 10)
         };
         
-        console.log('Sending data:', data);
+        // Add pengajuan-specific fields if relevant
+        if (biayaType === 'pengajuan') {
+            const jenjangSekolah = document.getElementById('jenjangSekolah').value;
+            const jenisKelas = document.getElementById('jenisKelas').value;
+            const kelas = document.getElementById('kelas').value;
+            
+            if (!jenjangSekolah) {
+                showAlert('Jenjang sekolah harus dipilih', 'error');
+                return;
+            }
+            
+            if (!jenisKelas) {
+                showAlert('Jenis kelas harus dipilih', 'error');
+                return;
+            }
+            
+            if (!kelas) {
+                showAlert('Kelas harus dipilih', 'error');
+                return;
+            }
+            
+            data.jenjang_sekolah = jenjangSekolah;
+            data.jenis_kelas = jenisKelas;
+            data.kelas = kelas;
+        }
+        
+        print.log('Sending data:', data);
         
         try {
             let response;
@@ -343,7 +458,7 @@
                 response = await AwaitFetchApi(endpoint, 'POST', data);
             }
             
-            console.log('Response:', response);
+            print.log('Response:', response);
             
             if (response.meta?.code === 200 || response.meta?.code === 201) {
                 showAlert(response.meta.message || `${biayaType === 'pendaftaran' ? 'Biaya pendaftaran' : 'Pengajuan biaya'} berhasil disimpan`, 'success');
@@ -358,7 +473,7 @@
                 showAlert(response.meta?.message || `Gagal menyimpan ${biayaType === 'pendaftaran' ? 'biaya pendaftaran' : 'pengajuan biaya'}`, 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
+            print.error('Error:', error);
             showAlert(`Terjadi kesalahan saat menyimpan ${biayaType === 'pendaftaran' ? 'biaya pendaftaran' : 'pengajuan biaya'}`, 'error');
         }
     }
@@ -382,6 +497,42 @@
             showConfirmButton: false,
             timer: 2000
         });
+    }
+    
+    function updateKelasOptions() {
+        const jenisKelas = document.getElementById('jenisKelas').value;
+        const jenjang = document.getElementById('jenjangSekolah').value;
+        const kelasSelect = document.getElementById('kelas');
+        
+        // Clear existing options
+        kelasSelect.innerHTML = '<option value="">Pilih Kelas</option>';
+        
+        if (!jenisKelas || !jenjang) return;
+        
+        if (jenisKelas === 'reguler') {
+            // For regular classes, show only "Reguler" option
+            const optElement = document.createElement('option');
+            optElement.value = "reguler";
+            optElement.textContent = "Reguler";
+            kelasSelect.appendChild(optElement);
+        } else if (jenisKelas === 'unggulan') {
+            // For unggulan classes, show jurusan filtered by jenjang_sekolah
+            const filteredJurusan = jurusanList.filter(j => j.jenjang_sekolah === jenjang);
+            
+            if (filteredJurusan.length === 0) {
+                const optElement = document.createElement('option');
+                optElement.value = "";
+                optElement.textContent = "Tidak ada jurusan tersedia";
+                kelasSelect.appendChild(optElement);
+            } else {
+                filteredJurusan.forEach(jurusan => {
+                    const optElement = document.createElement('option');
+                    optElement.value = jurusan.id;
+                    optElement.textContent = jurusan.jurusan;
+                    kelasSelect.appendChild(optElement);
+                });
+            }
+        }
     }
 </script>
 
