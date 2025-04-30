@@ -64,11 +64,11 @@ async function loadBanners() {
         if (response.meta?.code === 200) {
             renderBanners(response.data.data || []);
         } else {
-            showAlert('Gagal memuat banner: ' + response.meta?.message);
+            showNotification('Gagal memuat banner: ' + response.meta?.message);
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat memuat banner');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat memuat banner');
     }
 }
 
@@ -121,28 +121,28 @@ async function uploadBanner() {
     const fileInput = document.getElementById('banner-upload');
     
     if (!fileInput.files[0]) {
-        showAlert('Pilih gambar terlebih dahulu');
+        showNotification('Pilih gambar terlebih dahulu');
         return;
     }
     
     if (!formData.get('urutan')) {
-        showAlert('Masukkan urutan banner', 'info');
+        showNotification('Masukkan urutan banner', 'info');
         return;
     }
 
     try {
         const response = await AwaitFetchApi('admin/homepage', 'POST', formData);
         if (response.meta?.code === 200) {
-            showAlert(response.meta.message || 'Banner berhasil diupload');
+            showNotification(response.meta.message || 'Banner berhasil diupload');
             document.getElementById('uploadForm').reset();
             document.getElementById('preview').classList.add('hidden');
             loadBanners(); // Muat ulang daftar banner
         } else {
-            showAlert('Gagal upload banner: ' + (response.meta?.message || 'Terjadi kesalahan'));
+            showNotification('Gagal upload banner: ' + (response.meta?.message || 'Terjadi kesalahan'));
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat upload banner');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat upload banner');
     }
 }
 
@@ -155,16 +155,16 @@ async function deleteBanner(id) {
     }
 
     try {
-        const response = await AwaitFetchApi(`homepage/${id}`, 'DELETE');
+        const response = await AwaitFetchApi(`admin/homepage/${id}`, 'DELETE');
         if (response.meta?.code === 200) {
-            showAlert(response.meta.message || 'Banner berhasil dihapus', 'success');
+            showNotification(response.meta.message || 'Banner berhasil dihapus', 'success');
             loadBanners(); // Muat ulang daftar banner
         } else {
-            showAlert(response.meta?.message || 'Gagal menghapus banner', 'error');
+            showNotification(response.meta?.message || 'Gagal menghapus banner', 'error');
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat menghapus banner', 'error');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat menghapus banner', 'error');
     }
 }
 

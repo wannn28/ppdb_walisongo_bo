@@ -4,8 +4,11 @@
 <div class="container mx-auto px-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Manajemen Kelas</h1>
-        <div>
-            <button id="btnAddJurusan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center mr-2">
+        <div class="flex gap-4">
+            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openTrashModal()">
+                <i class="fas fa-trash mr-2"></i> Trash
+            </button>
+            <button id="btnAddJurusan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
                 <i class="fas fa-plus mr-2"></i> Tambah Kelas
             </button>
         </div>
@@ -15,7 +18,7 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Id</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kelas</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenjang Sekolah</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -63,6 +66,35 @@
     </div>
 </div>
 
+<!-- Modal Trash Kelas -->
+<div id="trashModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Kelas Terhapus</h3>
+            <button data-close-modal="trashModal" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Id</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kelas</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenjang Sekolah</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deleted At</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="trashTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -93,7 +125,7 @@
     async function loadJurusan() {
         try {
             const response = await AwaitFetchApi('admin/jurusan', 'GET');
-            console.log('API Response - Kelas:', response);
+            print.log('API Response - Kelas:', response);
             
             const tableBody = document.getElementById('jurusanTableBody');
             tableBody.innerHTML = '';
@@ -115,8 +147,8 @@
             jurusanList.forEach((jurusan, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">${index + 1}</td>
-                    <td class="px-6 py-4 whitespace-nowrap">${jurusan.jurusan}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${jurusan.id}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${capitalizeWords(jurusan.jurusan)}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
                             ${jurusan.jenjang_sekolah}
@@ -134,8 +166,57 @@
                 tableBody.appendChild(row);
             });
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat data kelas', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat data kelas', 'error');
+        }
+    }
+    
+    async function loadTrashData() {
+        try {
+            const response = await AwaitFetchApi('admin/jurusans/trash', 'GET');
+            print.log('API Response - Kelas Trash:', response);
+            
+            const tableBody = document.getElementById('trashTableBody');
+            tableBody.innerHTML = '';
+            
+            if (!response.data || response.data.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        Tidak ada data kelas terhapus
+                    </td>
+                `;
+                tableBody.appendChild(emptyRow);
+                return;
+            }
+            
+            // Check if data is in response.data or response.data.data based on API structure
+            const jurusanList = Array.isArray(response.data) ? response.data : (response.data.data || []);
+            
+            jurusanList.forEach((jurusan, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${capitalizeWords(jurusan.jurusan)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
+                            ${jurusan.jenjang_sekolah}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${jurusan.deleted_at ? new Date(jurusan.deleted_at).toLocaleString() : '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="restoreJurusan(${jurusan.id})" class="text-green-600 hover:text-green-900">
+                            <i class="fas fa-trash-restore"></i> Restore
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat data kelas terhapus', 'error');
         }
     }
     
@@ -149,43 +230,66 @@
                 document.getElementById('jurusanForm').setAttribute('data-id', id);
                 document.getElementById('modalTitle').textContent = 'Edit Kelas';
                 openModal('jurusanModal');
-            } else {
-                showAlert(response.meta?.message || 'Gagal memuat detail kelas', 'error');
-            }
+            } 
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat detail kelas', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat detail kelas', 'error');
         }
     }
     
     async function deleteJurusan(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus kelas ini?')) {
+        const result = await showDeleteConfirmation('Apakah Anda yakin ingin menghapus kelas ini?');
+
+        if (!result.isConfirmed) {
             return;
         }
         
         try {
             const response = await AwaitFetchApi(`admin/jurusan/${id}`, 'DELETE');
             if (response.meta?.code === 200) {
-                showAlert(response.meta.message || 'Kelas berhasil dihapus', 'success');
+                showNotification(response.meta.message || 'Kelas berhasil dihapus', 'success');
                 loadJurusan();
-            } else {
-                showAlert(response.meta?.message || 'Gagal menghapus kelas', 'error');
-            }
+            } 
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menghapus kelas', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat menghapus kelas', 'error');
         }
+    }
+    
+    async function restoreJurusan(id) {
+        const result = await showDeleteConfirmation('Apakah Anda yakin ingin memulihkan kelas ini?', 'Ya, Pulihkan', 'Batal');
+
+        if (!result.isConfirmed) {
+            return;
+        }
+        
+        try {
+            const response = await AwaitFetchApi(`admin/jurusan/${id}/restore`, 'PUT');
+            if (response.meta?.code === 200) {
+                showNotification(response.meta.message || 'Kelas berhasil dipulihkan', 'success');
+                loadTrashData();
+                loadJurusan();
+            } 
+        } catch (error) {
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memulihkan kelas', 'error');
+        }
+    }
+    
+    function openTrashModal() {
+        loadTrashData();
+        openModal('trashModal');
     }
     
     async function handleFormSubmit(e) {
         e.preventDefault();
         
         const id = this.getAttribute('data-id');
-        const jurusan = document.getElementById('jurusan').value;
+        const jurusan = document.getElementById('jurusan').value.toLowerCase();
         const jenjang_sekolah = document.getElementById('jenjang_sekolah').value;
         
         if (!jurusan || !jenjang_sekolah) {
-            showAlert('Semua field harus diisi', 'error');
+            showNotification('Semua field harus diisi', 'error');
             return;
         }
         
@@ -204,33 +308,19 @@
             }
             
             if (response.meta?.code === 200 || response.meta?.code === 201) {
-                showAlert(response.meta.message || 'Kelas berhasil disimpan', 'success');
+                showNotification(response.meta.message || 'Kelas berhasil disimpan', 'success');
                 closeModal('jurusanModal');
                 loadJurusan();
-            } else {
-                showAlert(response.meta?.message || 'Gagal menyimpan kelas', 'error');
-            }
+            } 
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menyimpan kelas', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat menyimpan kelas', 'error');
         }
     }
     
-    function openModal(modalId) {
-        document.getElementById(modalId).classList.remove('hidden');
-    }
-    
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-    }
-    
-    function showAlert(message, type = 'info') {
-        Swal.fire({
-            icon: type,
-            title: message,
-            showConfirmButton: false,
-            timer: 2000
-        });
+    // Helper function to capitalize each word
+    function capitalizeWords(str) {
+        return str.replace(/\b\w/g, char => char.toUpperCase());
     }
 </script>
 @endpush 

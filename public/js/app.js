@@ -57,7 +57,9 @@ async function AwaitFetchApi(url, method, data, skipAuth = false) {
 
         // Hanya tampilkan notifikasi untuk method non-GET
         if (['POST', 'PUT', 'DELETE'].includes(method) && result.meta?.message) {
-            showNotification(result.meta.message, response.ok ? 'success' : 'error');
+            if (response.ok) {
+                showNotification(result.meta.message, 'success');
+            }
         }
 
         if (!response.ok) {
@@ -114,39 +116,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-/**
- * Fungsi untuk menampilkan alert dengan SweetAlert2
- * @param {string} message - Pesan yang akan ditampilkan
- * @param {string} type - Tipe alert ('success', 'error', 'warning', 'info')
- */
-function showAlert(message, type = 'success') {
-    Swal.fire({
-        text: message,
-        icon: type,
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true
-    });
-}
 
 /**
  * Fungsi untuk menampilkan konfirmasi delete dengan SweetAlert2
  * @param {string} message - Pesan konfirmasi
  * @returns {Promise} - Promise yang akan resolve dengan true jika user mengkonfirmasi
  */
-function showDeleteConfirmation(message = 'Apakah Anda yakin ingin menghapus data ini?') {
+function showDeleteConfirmation(message = 'Apakah Anda yakin ingin menghapus data ini?', confirmButtonText = 'Ya, Hapus!', cancelButtonText = 'Batal') {
     return Swal.fire({
         text: message,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: 'Batal',
+        customClass: {
+            container: 'swal-z-top'
+        }
     });
 }
+
 
 /**
  * Fungsi untuk membuka modal berdasarkan ID
@@ -166,7 +156,7 @@ function openModal(modalId, callback = null) {
             callback();
         }
     } else {
-        console.error(`Modal dengan ID ${modalId} tidak ditemukan`);
+        print.error(`Modal dengan ID ${modalId} tidak ditemukan`);
     }
 }
 
@@ -191,7 +181,7 @@ function closeModal(modalId, callback = null) {
             callback();
         }
     } else {
-        console.error(`Modal dengan ID ${modalId} tidak ditemukan`);
+        print.error(`Modal dengan ID ${modalId} tidak ditemukan`);
     }
 }
 
@@ -231,7 +221,7 @@ function previewFile(url, previewModalId = 'previewModal', previewFrameId = 'fil
         preview.src = url;
         openModal(previewModalId);
     } else {
-        console.error('Modal preview atau frame tidak ditemukan');
+        print.error('Modal preview atau frame tidak ditemukan');
     }
 }
 

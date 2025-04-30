@@ -6,9 +6,12 @@
         <h1 class="text-2xl font-bold">Detail Peserta PPDB</h1>
         <div class="flex gap-4">
             <x-search placeholder="Cari Peserta..." searchFunction="searchPeserta" additionalClasses="bg-transparent shadow-none p-0" />
-            <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal('tambahModal')">
-                <i class="fas fa-plus mr-2"></i> Tambah Peserta
+            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal('trashModal')">
+                <i class="fas fa-trash mr-2"></i> Trash
             </button>
+            {{-- <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal('tambahModal')">
+                <i class="fas fa-plus mr-2"></i> Tambah Peserta
+            </button> --}}
         </div>
     </div>
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -198,6 +201,74 @@
     </div>
 </div>
 
+<!-- Modal Trash Peserta -->
+<div id="trashModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Peserta Terhapus</h3>
+            <button data-close-modal="trashModal" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NISN</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenjang</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deleted At</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="trashTableBody">
+                    <!-- Data will be loaded dynamically -->
+                </tbody>
+            </table>
+            
+            <!-- Pagination for trash -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button id="trash-prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </button>
+                    <button id="trash-next-page" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium" id="trash-pagination-start">0</span>
+                            to
+                            <span class="font-medium" id="trash-pagination-end">0</span>
+                            of
+                            <span class="font-medium" id="trash-pagination-total">0</span>
+                            results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button id="trash-prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Previous</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="trash-page-numbers" class="flex"></div>
+                            <button id="trash-next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Next</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <x-table-utils />
 
 <script>
@@ -209,6 +280,8 @@ let searchTerm = '';
 let perPage = 10;
 let currentPesertaId = null;
 let allPeserta = [];
+let trashCurrentPage = 1;
+let trashTotalPages = 1;
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPesertaData();
@@ -230,6 +303,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('searchInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             searchPeserta();
+        }
+    });
+
+    // Setup trash pagination event listeners
+    document.getElementById('trash-prev-page').addEventListener('click', () => {
+        if (trashCurrentPage > 1) {
+            loadTrashData(trashCurrentPage - 1);
+        }
+    });
+    
+    document.getElementById('trash-next-page').addEventListener('click', () => {
+        if (trashCurrentPage < trashTotalPages) {
+            loadTrashData(trashCurrentPage + 1);
         }
     });
 });
@@ -262,8 +348,8 @@ async function loadPesertaData(page = 1) {
             updateSortIndicators();
         }
     } catch (error) {
-        console.error('Error loading peserta data:', error);
-        showAlert('Gagal memuat data peserta', 'error');
+        print.error('Error loading peserta data:', error);
+        showNotification('Gagal memuat data peserta', 'error');
     }
 }
 
@@ -597,36 +683,38 @@ async function viewDetail(id) {
             // Show the modal using the global function
             openModal('detailModal');
         } else {
-            showAlert('Gagal memuat detail peserta', 'error');
+            showNotification('Gagal memuat detail peserta', 'error');
         }
     } catch (error) {
-        console.error('Error fetching peserta details:', error);
-        showAlert('Terjadi kesalahan saat memuat detail peserta', 'error');
+        print.error('Error fetching peserta details:', error);
+        showNotification('Terjadi kesalahan saat memuat detail peserta', 'error');
     }
 }
 
 async function deletePeserta(id) {
-    if (!confirm('Apakah Anda yakin ingin menghapus peserta ini?')) {
+    const result = await showDeleteConfirmation('Apakah Anda yakin ingin menghapus peserta ini?');
+    
+    if (!result.isConfirmed) {
         return;
     }
     
     try {
         const response = await AwaitFetchApi(`admin/peserta/${id}`, 'DELETE');
         if (response.meta?.code === 200) {
-            showAlert('Peserta berhasil dihapus', 'success');
+            showNotification('Peserta berhasil dihapus', 'success');
             loadPesertaData(currentPage);
         } else {
-            showAlert(`Gagal menghapus peserta: ${response.meta?.message}`, 'error');
+            showNotification(`Gagal menghapus peserta: ${response.meta?.message}`, 'error');
         }
     } catch (error) {
-        console.error('Error deleting peserta:', error);
-        showAlert('Terjadi kesalahan saat menghapus peserta', 'error');
+        print.error('Error deleting peserta:', error);
+        showNotification('Terjadi kesalahan saat menghapus peserta', 'error');
     }
 }
 
 async function updatePesertaStatus() {
     if (!currentPesertaId) {
-        showAlert('ID Peserta tidak valid', 'error');
+        showNotification('ID Peserta tidak valid', 'error');
         return;
     }
     
@@ -636,14 +724,14 @@ async function updatePesertaStatus() {
         const response = await AwaitFetchApi(`admin/peserta/${currentPesertaId}`, 'PUT', { status });
         
         if (response.meta?.code === 200) {
-            showAlert('Status peserta berhasil diperbarui', 'success');
+            showNotification('Status peserta berhasil diperbarui', 'success');
             loadPesertaData(currentPage); // Refresh the table
         } else {
-            showAlert(`Gagal memperbarui status: ${response.meta?.message}`, 'error');
+            showNotification(`Gagal memperbarui status: ${response.meta?.message}`, 'error');
         }
     } catch (error) {
-        console.error('Error updating peserta status:', error);
-        showAlert('Terjadi kesalahan saat memperbarui status peserta', 'error');
+        print.error('Error updating peserta status:', error);
+        showNotification('Terjadi kesalahan saat memperbarui status peserta', 'error');
     }
 }
 
@@ -657,15 +745,15 @@ document.getElementById('pesertaForm').addEventListener('submit', async function
     try {
         const response = await AwaitFetchApi('admin/peserta', 'POST', data);
         if (response.meta?.code === 201) {
-            showAlert('Peserta berhasil ditambahkan', 'success');
+            showNotification('Peserta berhasil ditambahkan', 'success');
             closeModal('tambahModal');
             loadPesertaData(currentPage);
         } else {
-            showAlert(`Gagal menambahkan peserta: ${response.meta?.message}`, 'error');
+            showNotification(`Gagal menambahkan peserta: ${response.meta?.message}`, 'error');
         }
     } catch (error) {
-        console.error('Error adding peserta:', error);
-        showAlert('Terjadi kesalahan saat menambahkan peserta', 'error');
+        print.error('Error adding peserta:', error);
+        showNotification('Terjadi kesalahan saat menambahkan peserta', 'error');
     }
 });
 
@@ -704,6 +792,198 @@ function getPenghasilanValue(peserta) {
     }
     
     return '-';
+}
+
+async function loadTrashData(page = 1) {
+    try {
+        const url = `admin/pesertas/trash?page=${page}&per_page=${perPage}`;
+        const response = await AwaitFetchApi(url, 'GET');
+        
+        if(response?.data) {
+            renderTrashTable(response.data);
+            updateTrashPagination(response.pagination);
+        }
+    } catch (error) {
+        print.error('Error loading trash data:', error);
+        showNotification('Gagal memuat data peserta terhapus', 'error');
+    }
+}
+
+function renderTrashTable(pesertas) {
+    const tbody = document.getElementById('trashTableBody');
+    tbody.innerHTML = '';
+    
+    if (pesertas.length === 0) {
+        const emptyRow = `
+            <tr>
+                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                    Tidak ada data peserta terhapus yang ditemukan
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML = emptyRow;
+        return;
+    }
+    
+    pesertas.forEach((peserta) => {
+        const row = `
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">${peserta.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${peserta.nisn || '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${peserta.nama}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
+                        ${peserta.jenjang_sekolah || '-'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    ${peserta.deleted_at ? new Date(peserta.deleted_at).toLocaleString() : '-'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button class="text-green-600 hover:text-green-900" onclick="restorePeserta(${peserta.id})">
+                        <i class="fas fa-trash-restore"></i> Restore
+                    </button>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+function updateTrashPagination(pagination) {
+    // Default values in case pagination data is missing or malformed
+    let currentPageValue = 1;
+    let totalPagesValue = 1;
+    let totalItemsValue = 0;
+    let perPageValue = 10;
+    
+    // Only update values if pagination data exists and is valid
+    if (pagination && typeof pagination === 'object') {
+        currentPageValue = parseInt(pagination.page) || 1;
+        totalPagesValue = parseInt(pagination.total_pages) || 1;
+        totalItemsValue = parseInt(pagination.total_items) || 0;
+        perPageValue = parseInt(pagination.per_page) || 10;
+        
+        // Update global variables
+        trashCurrentPage = currentPageValue;
+        trashTotalPages = totalPagesValue;
+    }
+    
+    // Calculate start and end values, protecting against NaN
+    const start = totalItemsValue > 0 ? (currentPageValue - 1) * perPageValue + 1 : 0;
+    const end = Math.min(start + perPageValue - 1, totalItemsValue);
+    
+    // Update DOM elements
+    document.getElementById('trash-pagination-start').textContent = start;
+    document.getElementById('trash-pagination-end').textContent = end;
+    document.getElementById('trash-pagination-total').textContent = totalItemsValue;
+    
+    // Update previous and next buttons state
+    document.getElementById('trash-prev-page').disabled = currentPageValue <= 1;
+    document.getElementById('trash-next-page').disabled = currentPageValue >= totalPagesValue;
+    
+    // Generate page numbers
+    const pageNumbers = document.getElementById('trash-page-numbers');
+    pageNumbers.innerHTML = '';
+    
+    // Don't show page numbers if there are no items
+    if (totalItemsValue === 0) {
+        return;
+    }
+    
+    // Determine page range to display
+    const maxPageButtons = 5;
+    let startPage = Math.max(1, currentPageValue - Math.floor(maxPageButtons / 2));
+    let endPage = Math.min(totalPagesValue, startPage + maxPageButtons - 1);
+    
+    if (endPage - startPage + 1 < maxPageButtons) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+    }
+    
+    // Add first page button if not at the beginning
+    if (startPage > 1) {
+        const firstPageBtn = document.createElement('button');
+        firstPageBtn.className = 'px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+        firstPageBtn.textContent = '1';
+        firstPageBtn.onclick = () => loadTrashData(1);
+        pageNumbers.appendChild(firstPageBtn);
+        
+        if (startPage > 2) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'px-3 py-1 text-gray-500';
+            ellipsis.textContent = '...';
+            pageNumbers.appendChild(ellipsis);
+        }
+    }
+    
+    // Add page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `px-3 py-1 rounded border ${currentPageValue === i ? 'bg-blue-500 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => loadTrashData(i);
+        pageNumbers.appendChild(pageBtn);
+    }
+    
+    // Add last page button if not at the end
+    if (endPage < totalPagesValue) {
+        if (endPage < totalPagesValue - 1) {
+            const ellipsis = document.createElement('span');
+            ellipsis.className = 'px-3 py-1 text-gray-500';
+            ellipsis.textContent = '...';
+            pageNumbers.appendChild(ellipsis);
+        }
+        
+        const lastPageBtn = document.createElement('button');
+        lastPageBtn.className = 'px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+        lastPageBtn.textContent = totalPagesValue;
+        lastPageBtn.onclick = () => loadTrashData(totalPagesValue);
+        pageNumbers.appendChild(lastPageBtn);
+    }
+}
+
+async function restorePeserta(id) {
+    try {
+        const result = await showDeleteConfirmation('Apakah Anda yakin ingin memulihkan peserta ini?', 'Ya, Pulihkan', 'Batal');
+        
+        if (!result.isConfirmed) {
+            return;
+        }
+        
+        const response = await AwaitFetchApi(`admin/peserta/${id}/restore`, 'PUT');
+        
+        if (response.meta?.code === 200) {
+            showNotification('Peserta berhasil dipulihkan', 'success');
+            loadTrashData(trashCurrentPage); // Refresh trash data
+            loadPesertaData(currentPage); // Refresh main table
+        } else {
+            showNotification(`Gagal memulihkan peserta: ${response.meta?.message}`, 'error');
+        }
+    } catch (error) {
+        print.error('Error restoring peserta:', error);
+        showNotification('Terjadi kesalahan saat memulihkan peserta', 'error');
+    }
+}
+
+// Add event listener to load trash data when modal opens
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.closest('[onclick="openModal(\'trashModal\')"]')) {
+        loadTrashData();
+    }
+});
+
+// Helper function for showing confirmation dialogs with custom buttons
+async function showConfirmation(message, confirmText = 'Ya', cancelText = 'Batal') {
+    return await Swal.fire({
+        title: 'Konfirmasi',
+        text: message,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: confirmText,
+        cancelButtonText: cancelText
+    });
 }
 </script>
 @endsection

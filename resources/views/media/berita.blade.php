@@ -67,11 +67,11 @@ async function loadBerita() {
         if (response.meta?.code === 200) {
             renderBerita(response.data.data || []);
         } else {
-            showAlert('Gagal memuat berita: ' + response.meta?.message);
+            showNotification('Gagal memuat berita: ' + response.meta?.message);
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat memuat berita');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat memuat berita');
     }
 }
 
@@ -99,7 +99,6 @@ function renderBerita(beritas) {
                 <p class="text-xs text-gray-500">ID: ${berita.id}</p>
             </div>
             <div class="mt-2 flex justify-between items-center">
-                <span class="text-sm text-gray-500">${new Date(berita.created_at).toLocaleDateString('id-ID')}</span>
                 <div>
                     <button class="text-red-500 hover:text-red-700" onclick="deleteBerita(${berita.id})">
                         <i class="fas fa-trash"></i>
@@ -130,28 +129,28 @@ async function uploadBerita() {
     const fileInput = document.getElementById('berita-upload');
     
     if (!fileInput.files[0]) {
-        showAlert('Pilih gambar terlebih dahulu');
+        showNotification('Pilih gambar terlebih dahulu');
         return;
     }
     
     if (!formData.get('urutan')) {
-        showAlert('Masukkan urutan berita');
+        showNotification('Masukkan urutan berita');
         return;
     }
 
     try {
         const response = await AwaitFetchApi('admin/berita', 'POST', formData);
         if (response.meta?.code === 200) {
-            showAlert(response.meta.message || 'Berita berhasil diupload');
+            showNotification(response.meta.message || 'Berita berhasil diupload');
             document.getElementById('uploadForm').reset();
             document.getElementById('preview').classList.add('hidden');
             loadBerita(); // Muat ulang daftar berita
         } else {
-            showAlert('Gagal upload berita: ' + (response.meta?.message || 'Terjadi kesalahan'));
+            showNotification('Gagal upload berita: ' + (response.meta?.message || 'Terjadi kesalahan'));
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat upload berita');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat upload berita');
     }
 }
 
@@ -165,14 +164,14 @@ async function deleteBerita(id) {
     try {
         const response = await AwaitFetchApi(`admin/berita/${id}`, 'DELETE');
         if (response.meta?.code === 200) {
-            showAlert(response.meta.message || 'Berita berhasil dihapus', 'success');
+            showNotification(response.meta.message || 'Berita berhasil dihapus', 'success');
             loadBerita(); // Muat ulang daftar berita
         } else {
-            showAlert(response.meta?.message || 'Gagal menghapus berita', 'error');
+            showNotification(response.meta?.message || 'Gagal menghapus berita', 'error');
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat menghapus berita', 'error');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat menghapus berita', 'error');
     }
 }
 
@@ -195,8 +194,8 @@ async function editBerita(id) {
             document.querySelector('button[onclick="uploadBerita()"]').textContent = 'Update Berita';
         }
     } catch (error) {
-        console.error('Error:', error);
-        showAlert('Terjadi kesalahan saat mengambil data berita');
+        print.error('Error:', error);
+        showNotification('Terjadi kesalahan saat mengambil data berita');
     }
 }
 

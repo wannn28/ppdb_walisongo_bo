@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <script src="{{ asset('js/logger.js') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js/generateqris.js') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
     <script>

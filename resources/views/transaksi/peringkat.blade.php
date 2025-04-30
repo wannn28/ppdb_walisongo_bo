@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.textContent = jurusan.jurusan;
                     jurusanSelect.appendChild(option);
                 });
-                console.log('Jurusan loaded:', result.data);
+                print.log('Jurusan loaded:', result.data);
             } else if (result.success) {
                 const jurusanSelect = document.getElementById('jurusan');
                 result.data.forEach(jurusan => {
@@ -116,12 +116,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.textContent = jurusan.nama || jurusan.jurusan;
                     jurusanSelect.appendChild(option);
                 });
-                console.log('Jurusan loaded:', result.data);
+                print.log('Jurusan loaded:', result.data);
             } else {
-                console.error('Error loading jurusan:', result);
+                print.error('Error loading jurusan:', result);
             }
         } catch (error) {
-            console.error('Error fetching jurusan:', error);
+            print.error('Error fetching jurusan:', error);
         }
     }
 
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         try {
             const result = await AwaitFetchApi(`admin/peringkat?page=${page}&jurusan_id=${selectedJurusan}&sort_by=score&order_by=desc`, 'GET');
-            console.log('Ranking result:', result);
+            print.log('Ranking result:', result);
             
             if (result.success) {
                 tableBody.innerHTML = '';
@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('firstPage').disabled = currentPage === 1;
                 document.getElementById('lastPage').disabled = currentPage === totalPages;
             } else if (result.meta && result.meta.code === 400) {
-                console.error('Error:', result.meta.message);
+                print.error('Error:', result.meta.message);
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             } else {
                 // Display error message if needed
-                console.error('Error:', result.message);
+                print.error('Error:', result.message);
                 tableBody.innerHTML = `
                     <tr>
                         <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
         } catch (error) {
-            console.error('Error fetching rankings:', error);
+            print.error('Error fetching rankings:', error);
             tableBody.innerHTML = `
                 <tr>
                     <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">

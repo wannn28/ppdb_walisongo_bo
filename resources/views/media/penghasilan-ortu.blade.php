@@ -4,8 +4,12 @@
 <div class="container mx-auto px-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Manajemen Penghasilan Orang Tua</h1>
-        <div>
-            <button id="btnAddPenghasilan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center mr-2">
+        <div class="flex gap-4">
+            <button id="btnTrash" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center"
+                onclick="openTrashModal()">
+                <i class="fas fa-trash mr-2"></i> Trash
+            </button>
+            <button id="btnAddPenghasilan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
                 <i class="fas fa-plus mr-2"></i> Tambah Penghasilan
             </button>
         </div>
@@ -15,7 +19,7 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Id</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penghasilan Orang Tua</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
@@ -51,10 +55,79 @@
     </div>
 </div>
 
+<!-- Modal Trash Penghasilan -->
+<div id="trashPenghasilanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Penghasilan Orang Tua Terhapus</h3>
+            <button onclick="closeModal('trashPenghasilanModal')" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penghasilan Orang Tua</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dihapus Pada</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="trashPenghasilanTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+            
+            <!-- Pagination for trash -->
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button id="trash-prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </button>
+                    <button id="trash-next-page" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            Showing
+                            <span class="font-medium" id="trash-pagination-start">0</span>
+                            to
+                            <span class="font-medium" id="trash-pagination-end">0</span>
+                            of
+                            <span class="font-medium" id="trash-pagination-total">0</span>
+                            results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button id="trash-prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Previous</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="trash-page-numbers" class="flex"></div>
+                            <button id="trash-next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Next</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
+    let trashCurrentPage = 1;
+    let trashTotalPages = 1;
+
     document.addEventListener('DOMContentLoaded', () => {
         loadPenghasilan();
         
@@ -76,12 +149,25 @@
         
         // Form submission
         document.getElementById('penghasilanForm').addEventListener('submit', handleFormSubmit);
+        
+        // Trash pagination event listeners
+        document.getElementById('trash-prev-page').addEventListener('click', () => {
+            if (trashCurrentPage > 1) {
+                loadTrashPenghasilan(trashCurrentPage - 1);
+            }
+        });
+        
+        document.getElementById('trash-next-page').addEventListener('click', () => {
+            if (trashCurrentPage < trashTotalPages) {
+                loadTrashPenghasilan(trashCurrentPage + 1);
+            }
+        });
     });
     
     async function loadPenghasilan() {
         try {
             const response = await AwaitFetchApi('admin/penghasilan-ortu', 'GET');
-            console.log('API Response - Penghasilan:', response);
+            print.log('API Response - Penghasilan:', response);
             
             const tableBody = document.getElementById('penghasilanTableBody');
             tableBody.innerHTML = '';
@@ -103,7 +189,7 @@
             penghasilanList.forEach((penghasilan, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${penghasilan.id}</td>
                     <td class="px-6 py-4 whitespace-nowrap">${penghasilan.penghasilan_ortu}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button onclick="editPenghasilan(${penghasilan.id})" class="text-blue-600 hover:text-blue-900 mr-3">
@@ -117,8 +203,8 @@
                 tableBody.appendChild(row);
             });
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat data penghasilan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat data penghasilan', 'error');
         }
     }
     
@@ -132,30 +218,32 @@
                 document.getElementById('modalTitle').textContent = 'Edit Penghasilan';
                 openModal('penghasilanModal');
             } else {
-                showAlert(response.meta?.message || 'Gagal memuat detail penghasilan', 'error');
+                showNotification(response.meta?.message || 'Gagal memuat detail penghasilan', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat detail penghasilan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat detail penghasilan', 'error');
         }
     }
     
     async function deletePenghasilan(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus penghasilan ini?')) {
+        const result = await showDeleteConfirmation('Apakah Anda yakin ingin menghapus penghasilan ini?');
+        
+        if (!result.isConfirmed) {
             return;
         }
         
         try {
             const response = await AwaitFetchApi(`admin/penghasilan-ortu/${id}`, 'DELETE');
             if (response.meta?.code === 200) {
-                showAlert(response.meta.message || 'Penghasilan berhasil dihapus', 'success');
+                showNotification(response.meta.message || 'Penghasilan berhasil dihapus', 'success');
                 loadPenghasilan();
             } else {
-                showAlert(response.meta?.message || 'Gagal menghapus penghasilan', 'error');
+                showNotification(response.meta?.message || 'Gagal menghapus penghasilan', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menghapus penghasilan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat menghapus penghasilan', 'error');
         }
     }
     
@@ -166,7 +254,7 @@
         const penghasilan_ortu = document.getElementById('penghasilan_ortu').value;
         
         if (!penghasilan_ortu) {
-            showAlert('Penghasilan orang tua tidak boleh kosong', 'error');
+            showNotification('Penghasilan orang tua tidak boleh kosong', 'error');
             return;
         }
         
@@ -184,16 +272,191 @@
             }
             
             if (response.meta?.code === 200 || response.meta?.code === 201) {
-                showAlert(response.meta.message || 'Penghasilan berhasil disimpan', 'success');
+                showNotification(response.meta.message || 'Penghasilan berhasil disimpan', 'success');
                 closeModal('penghasilanModal');
                 loadPenghasilan();
             } else {
-                showAlert(response.meta?.message || 'Gagal menyimpan penghasilan', 'error');
+                showNotification(response.meta?.message || 'Gagal menyimpan penghasilan', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menyimpan penghasilan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat menyimpan penghasilan', 'error');
         }
+    }
+    
+    async function loadTrashPenghasilan(page = 1) {
+        trashCurrentPage = page;
+        try {
+            const params = new URLSearchParams({
+                page: page,
+                per_page: 10
+            });
+
+            const response = await AwaitFetchApi(`admin/penghasilan-ortus/trash?${params}`, 'GET');
+            print.log('API Response - Penghasilan Ortu Trash:', response);
+            
+            const tableBody = document.getElementById('trashPenghasilanTableBody');
+            tableBody.innerHTML = '';
+            
+            // Check if response has data
+            if (!response.data || (Array.isArray(response.data) && response.data.length === 0) || 
+                (response.data.data && response.data.data.length === 0)) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                            Tidak ada penghasilan orang tua terhapus
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Determine if response is paginated or direct array
+            let penghasilanList;
+            let paginationInfo = { from: 1, to: 0, total: 0, last_page: 1 };
+            
+            if (Array.isArray(response.data)) {
+                // Direct array response
+                penghasilanList = response.data;
+                paginationInfo.to = penghasilanList.length;
+                paginationInfo.total = penghasilanList.length;
+            } else {
+                // Paginated response
+                penghasilanList = response.data.data || [];
+                paginationInfo = {
+                    from: response.data.from || 1,
+                    to: response.data.to || penghasilanList.length,
+                    total: response.data.total || penghasilanList.length,
+                    last_page: response.data.last_page || 1
+                };
+            }
+            
+            // Update pagination info
+            document.getElementById('trash-pagination-start').textContent = paginationInfo.from || 1;
+            document.getElementById('trash-pagination-end').textContent = paginationInfo.to || penghasilanList.length;
+            document.getElementById('trash-pagination-total').textContent = paginationInfo.total || penghasilanList.length;
+            
+            // Enable/disable pagination buttons
+            document.getElementById('trash-prev-page').disabled = trashCurrentPage === 1;
+            document.getElementById('trash-next-page').disabled = trashCurrentPage === paginationInfo.last_page;
+            
+            // Update page numbers
+            updateTrashPageNumbers(trashCurrentPage, paginationInfo.last_page);
+            
+            trashTotalPages = paginationInfo.last_page;
+            
+            let startIndex = paginationInfo.from || 1;
+            
+            penghasilanList.forEach((penghasilan, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${startIndex + index}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${penghasilan.penghasilan_ortu}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div>${formatDate(penghasilan.deleted_at)}</div>
+                        <div class="text-sm text-gray-500">${formatDate(penghasilan.deleted_at, true)?.split(' ')[1] || ''}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="restorePenghasilan(${penghasilan.id})" class="text-green-600 hover:text-green-900">
+                            <i class="fas fa-trash-restore"></i> Restore
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat data penghasilan orang tua terhapus', 'error');
+        }
+    }
+    
+    function updateTrashPageNumbers(currentPage, lastPage) {
+        const pageNumbersContainer = document.getElementById('trash-page-numbers');
+        pageNumbersContainer.innerHTML = '';
+        
+        // Determine range of page numbers to show
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(lastPage, startPage + 4);
+        
+        // Adjust start if we're near the end
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+        
+        // Add first page button if not included in range
+        if (startPage > 1) {
+            addPageButton(1);
+            if (startPage > 2) {
+                addEllipsis();
+            }
+        }
+        
+        // Add page number buttons
+        for (let i = startPage; i <= endPage; i++) {
+            addPageButton(i);
+        }
+        
+        // Add last page button if not included in range
+        if (endPage < lastPage) {
+            if (endPage < lastPage - 1) {
+                addEllipsis();
+            }
+            addPageButton(lastPage);
+        }
+        
+        function addPageButton(pageNum) {
+            const button = document.createElement('button');
+            button.textContent = pageNum;
+            button.classList.add('px-3', 'py-1', 'border', 'rounded-md');
+            
+            if (pageNum === currentPage) {
+                button.classList.add('bg-blue-500', 'text-white');
+            } else {
+                button.classList.add('hover:bg-gray-100');
+                button.addEventListener('click', () => loadTrashPenghasilan(pageNum));
+            }
+            
+            pageNumbersContainer.appendChild(button);
+        }
+        
+        function addEllipsis() {
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.classList.add('px-2', 'py-1');
+            pageNumbersContainer.appendChild(ellipsis);
+        }
+    }
+    
+    async function restorePenghasilan(id) {
+        const result = await showDeleteConfirmation(
+            'Apakah Anda yakin ingin memulihkan penghasilan orang tua ini?',
+            'Ya, Pulihkan',
+            'Batal'
+        );
+        
+        if (!result.isConfirmed) {
+            return;
+        }
+        
+        try {
+            const response = await AwaitFetchApi(`admin/penghasilan-ortu/${id}/restore`, 'PUT');
+            
+            if (response.meta?.code === 200) {
+                showNotification(response.meta.message || 'Penghasilan orang tua berhasil dipulihkan', 'success');
+                loadTrashPenghasilan(trashCurrentPage);
+                loadPenghasilan();
+            } else {
+                showNotification(response.meta?.message || 'Gagal memulihkan penghasilan orang tua', 'error');
+            }
+        } catch (error) {
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memulihkan penghasilan orang tua', 'error');
+        }
+    }
+    
+    function openTrashModal() {
+        loadTrashPenghasilan();
+        openModal('trashPenghasilanModal');
     }
     
     function openModal(modalId) {
@@ -204,13 +467,5 @@
         document.getElementById(modalId).classList.add('hidden');
     }
     
-    function showAlert(message, type = 'info') {
-        Swal.fire({
-            icon: type,
-            title: message,
-            showConfirmButton: false,
-            timer: 2000
-        });
-    }
 </script>
 @endpush 

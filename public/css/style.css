@@ -2,3 +2,7 @@
     font-size: 0.8rem !important;
     border-radius: 0.5rem !important;
 }
+.swal2-container {
+    z-index: 999999999999 !important;
+  }
+  

@@ -135,8 +135,8 @@
                     updateSortIndicators(sortBy, sortDirection);
                 }
             } catch (error) {
-                console.error('Error loading berkas:', error);
-                showAlert('Terjadi kesalahan saat memuat data berkas', 'error');
+                print.error('Error loading berkas:', error);
+                showNotification('Terjadi kesalahan saat memuat data berkas', 'error');
             }
         }
 
@@ -164,14 +164,14 @@
             try {
                 const response = await AwaitFetchApi(`admin/berkas/${id}`, 'DELETE');
                 if (response.meta?.code === 200) {
-                    showAlert('Berkas berhasil dihapus', 'success');
+                    showNotification('Berkas berhasil dihapus', 'success');
                     loadBerkasPeserta(currentPage); // Stay on current page after deletion
                 } else {
-                    showAlert(`Gagal menghapus berkas: ${response.meta?.message}`, 'error');
+                    showNotification(`Gagal menghapus berkas: ${response.meta?.message}`, 'error');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                showAlert('Terjadi kesalahan saat menghapus berkas', 'error');
+                print.error('Error:', error);
+                showNotification('Terjadi kesalahan saat menghapus berkas', 'error');
             }
         }
     </script>

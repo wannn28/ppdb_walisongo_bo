@@ -4,8 +4,11 @@
 <div class="container mx-auto px-4">
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Manajemen Pekerjaan Orang Tua</h1>
-        <div>
-            <button id="btnAddPekerjaan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center mr-2">
+        <div class="flex gap-4">
+            <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openTrashModal()">
+                <i class="fas fa-trash mr-2"></i> Trash
+            </button>
+            <button id="btnAddPekerjaan" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
                 <i class="fas fa-plus mr-2"></i> Tambah Pekerjaan
             </button>
         </div>
@@ -51,6 +54,34 @@
     </div>
 </div>
 
+<!-- Modal Trash Pekerjaan -->
+<div id="trashModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
+    <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium leading-6 text-gray-900">Pekerjaan Terhapus</h3>
+            <button data-close-modal="trashModal" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="bg-white rounded-lg overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pekerjaan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deleted At</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="trashTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -81,7 +112,7 @@
     async function loadPekerjaan() {
         try {
             const response = await AwaitFetchApi('admin/pekerjaan-ortu', 'GET');
-            console.log('API Response - Pekerjaan:', response);
+            print.log('API Response - Pekerjaan:', response);
             
             const tableBody = document.getElementById('pekerjaanTableBody');
             tableBody.innerHTML = '';
@@ -117,8 +148,52 @@
                 tableBody.appendChild(row);
             });
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat data pekerjaan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat data pekerjaan', 'error');
+        }
+    }
+    
+    async function loadTrashData() {
+        try {
+            const response = await AwaitFetchApi('admin/pekerjaan-ortus/trash', 'GET');
+            print.log('API Response - Pekerjaan Trash:', response);
+            
+            const tableBody = document.getElementById('trashTableBody');
+            tableBody.innerHTML = '';
+            
+            if (!response.data || response.data.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                        Tidak ada data pekerjaan terhapus
+                    </td>
+                `;
+                tableBody.appendChild(emptyRow);
+                return;
+            }
+            
+            // Check if data is in response.data or response.data.data based on API structure
+            const pekerjaanList = Array.isArray(response.data) ? response.data : (response.data.data || []);
+            
+            pekerjaanList.forEach((pekerjaan, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${pekerjaan.nama_pekerjaan}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        ${pekerjaan.deleted_at ? new Date(pekerjaan.deleted_at).toLocaleString() : '-'}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="restorePekerjaan(${pekerjaan.id})" class="text-green-600 hover:text-green-900">
+                            <i class="fas fa-trash-restore"></i> Restore
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat data pekerjaan terhapus', 'error');
         }
     }
     
@@ -132,31 +207,60 @@
                 document.getElementById('modalTitle').textContent = 'Edit Pekerjaan';
                 openModal('pekerjaanModal');
             } else {
-                showAlert(response.meta?.message || 'Gagal memuat detail pekerjaan', 'error');
+                showNotification(response.meta?.message || 'Gagal memuat detail pekerjaan', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat memuat detail pekerjaan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memuat detail pekerjaan', 'error');
         }
     }
     
     async function deletePekerjaan(id) {
-        if (!confirm('Apakah Anda yakin ingin menghapus pekerjaan ini?')) {
+        const result = await showDeleteConfirmation('Apakah Anda yakin ingin menghapus pekerjaan ini?');
+
+        if (!result.isConfirmed) {
             return;
         }
         
         try {
             const response = await AwaitFetchApi(`admin/pekerjaan-ortu/${id}`, 'DELETE');
             if (response.meta?.code === 200) {
-                showAlert(response.meta.message || 'Pekerjaan berhasil dihapus', 'success');
+                showNotification(response.meta.message || 'Pekerjaan berhasil dihapus', 'success');
                 loadPekerjaan();
             } else {
-                showAlert(response.meta?.message || 'Gagal menghapus pekerjaan', 'error');
+                showNotification(response.meta?.message || 'Gagal menghapus pekerjaan', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menghapus pekerjaan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat menghapus pekerjaan', 'error');
         }
+    }
+    
+    async function restorePekerjaan(id) {
+        const result = await showDeleteConfirmation('Apakah Anda yakin ingin memulihkan pekerjaan ini?', 'Ya, Pulihkan', 'Batal');
+
+        if (!result.isConfirmed) {
+            return;
+        }
+        
+        try {
+            const response = await AwaitFetchApi(`admin/pekerjaan-ortu/${id}/restore`, 'PUT');
+            if (response.meta?.code === 200) {
+                showNotification(response.meta.message || 'Pekerjaan berhasil dipulihkan', 'success');
+                loadTrashData();
+                loadPekerjaan();
+            } else {
+                showNotification(response.meta?.message || 'Gagal memulihkan pekerjaan', 'error');
+            }
+        } catch (error) {
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat memulihkan pekerjaan', 'error');
+        }
+    }
+    
+    function openTrashModal() {
+        loadTrashData();
+        openModal('trashModal');
     }
     
     async function handleFormSubmit(e) {
@@ -166,7 +270,7 @@
         const nama_pekerjaan = document.getElementById('nama_pekerjaan').value;
         
         if (!nama_pekerjaan) {
-            showAlert('Nama pekerjaan tidak boleh kosong', 'error');
+            showNotification('Nama pekerjaan tidak boleh kosong', 'error');
             return;
         }
         
@@ -184,33 +288,17 @@
             }
             
             if (response.meta?.code === 200 || response.meta?.code === 201) {
-                showAlert(response.meta.message || 'Pekerjaan berhasil disimpan', 'success');
+                showNotification(response.meta.message || 'Pekerjaan berhasil disimpan', 'success');
                 closeModal('pekerjaanModal');
                 loadPekerjaan();
             } else {
-                showAlert(response.meta?.message || 'Gagal menyimpan pekerjaan', 'error');
+                showNotification(response.meta?.message || 'Gagal menyimpan pekerjaan', 'error');
             }
         } catch (error) {
-            console.error('Error:', error);
-            showAlert('Terjadi kesalahan saat menyimpan pekerjaan', 'error');
+            print.error('Error:', error);
+            showNotification('Terjadi kesalahan saat menyimpan pekerjaan', 'error');
         }
     }
     
-    function openModal(modalId) {
-        document.getElementById(modalId).classList.remove('hidden');
-    }
-    
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.add('hidden');
-    }
-    
-    function showAlert(message, type = 'info') {
-        Swal.fire({
-            icon: type,
-            title: message,
-            showConfirmButton: false,
-            timer: 2000
-        });
-    }
 </script>
 @endpush

@@ -1,6 +1,6 @@
 @props(['id' => 'pagination', 'loadFunction' => 'loadData'])
 
-<div id="{{ $id }}" class="flex justify-between mt-4">
+<div id="{{ $id }}" class="flex justify-between m-4">
     <div class="flex items-center gap-2">
         <span class="text-sm text-gray-700">
             Menampilkan 

@@ -134,7 +134,7 @@ async function fetchData(page = 1, limit = 10) {
             updateSortIndicators();
         }
     } catch (error) {
-        // showAlert('Gagal memuat data user', 'error');
+        // showNotification('Gagal memuat data user', 'error');
     }
 }
 
@@ -233,13 +233,13 @@ function searchUser() {
             if (response.data && response.data.length > 0) {
                 renderTable(response.data);
             } else {
-                showAlert('User tidak ditemukan', 'warning');
+                showNotification('User tidak ditemukan', 'warning');
                 renderTable([]);
             }
         })
         .catch(error => {
-            showAlert('Gagal mencari user', 'error');
-            console.error('Search error:', error);
+            showNotification('Gagal mencari user', 'error');
+            print.error('Search error:', error);
         });
 }
 
@@ -260,13 +260,13 @@ async function saveUser(formData, id = null) {
         const response = await AwaitFetchApi(url, method, formData);
         
         if(response.meta?.code === 200) {
-            showAlert(`User berhasil ${id ? 'diupdate' : 'ditambahkan'}`, 'success');
+            showNotification(`User berhasil ${id ? 'diupdate' : 'ditambahkan'}`, 'success');
             await fetchData();
             return true;
         }
         return false;
     } catch (error) {
-        showAlert(`Gagal menyimpan user: ${error.message}`, 'error');
+        showNotification(`Gagal menyimpan user: ${error.message}`, 'error');
         return false;
     }
 }

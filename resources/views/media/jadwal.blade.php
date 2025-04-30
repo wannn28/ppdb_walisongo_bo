@@ -39,6 +39,7 @@
                         <option value="SD">SD</option>
                         <option value="SMP">SMP</option>
                         <option value="SMA">SMA</option>
+                        <option value="SMK">SMK</option>
                     </select>
                 </div>
                 
@@ -92,11 +93,11 @@ async function loadJadwal() {
         if (response.meta?.code === 200) {
             renderJadwal(response.data || []); // Ubah dari response.data.data menjadi response.data
         } else {
-            showAlert(response.meta?.message || 'Gagal memuat jadwal');
+            showNotification(response.meta?.message || 'Gagal memuat jadwal');
         }
     } catch (error) {
         print.error('Error:', error);
-        showAlert('Terjadi kesalahan saat memuat jadwal', 'error');
+        showNotification('Terjadi kesalahan saat memuat jadwal', 'error');
     }
 }
 
@@ -180,7 +181,7 @@ async function editJadwal(id) {
             openModal('jadwalModal');
         }
     } catch (error) {
-        showAlert(response.meta?.message || 'Gagal mengambil data jadwal', 'error');
+        showNotification(response.meta?.message || 'Gagal mengambil data jadwal', 'error');
     }
 }
 
@@ -194,14 +195,14 @@ async function deleteJadwal(id) {
     try {
         const response = await AwaitFetchApi(`admin/media/${id}`, 'DELETE');
         if (response.meta?.code === 200) {
-            showAlert(response.meta.message || 'Jadwal berhasil dihapus', 'success');
+            showNotification(response.meta.message || 'Jadwal berhasil dihapus', 'success');
             loadJadwal(); // Muat ulang daftar jadwal
         } else {
-            showAlert(response.meta?.message || 'Gagal menghapus jadwal', 'error');
+            showNotification(response.meta?.message || 'Gagal menghapus jadwal', 'error');
         }
     } catch (error) {
         print.error('Error:', error);
-        showAlert('Terjadi kesalahan saat menghapus jadwal', 'error');
+        showNotification('Terjadi kesalahan saat menghapus jadwal', 'error');
     }
 }
 
@@ -214,22 +215,22 @@ document.getElementById('jadwalForm').addEventListener('submit', async function(
     const method = id ? 'PUT' : 'POST';
 
     if (!formData.get('image') && !id) {
-        showAlert('Pilih gambar terlebih dahulu', 'error');
+        showNotification('Pilih gambar terlebih dahulu', 'error');
         return;
     }
 
     try {
         const response = await AwaitFetchApi(endpoint, method, formData);
         if (response.meta?.code === 200 || response.meta?.code === 201) {
-            showAlert(response.meta.message || 'Jadwal berhasil disimpan', 'success');
+            showNotification(response.meta.message || 'Jadwal berhasil disimpan', 'success');
             closeModal('jadwalModal');
             loadJadwal();
         } else {
-            showAlert(response.meta?.message || 'Gagal menyimpan jadwal', 'error');
+            showNotification(response.meta?.message || 'Gagal menyimpan jadwal', 'error');
         }
     } catch (error) {
         print.error('Error:', error);
-        showAlert('Terjadi kesalahan saat menyimpan jadwal', 'error');
+        showNotification('Terjadi kesalahan saat menyimpan jadwal', 'error');
     }
 });
 
