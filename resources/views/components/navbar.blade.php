@@ -138,12 +138,6 @@
             </a>
           </li>
           <li class="nav-item">
-            <a href="{{ route('pengaturan-biaya') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('pengaturan-biaya') ? 'bg-white/10' : '' }}">
-              <span class="nav-icon flex items-center justify-center min-w-[20px]">⚙️</span>
-              <span class="sidebar-text ml-3 transition-opacity duration-300">Pengaturan Biaya</span>
-            </a>
-          </li>
-          <li class="nav-item">
             <a href="{{ route('biaya') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('biaya') ? 'bg-white/10' : '' }}">
               <span class="nav-icon flex items-center justify-center min-w-[20px]">💰</span>
               <span class="sidebar-text ml-3 transition-opacity duration-300">Biaya</span>

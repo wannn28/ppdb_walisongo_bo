@@ -426,11 +426,34 @@
                 if (response.meta?.code === 200) {
                     const data = response.data;
                     document.getElementById('namaBerkas').value = data.nama;
+                    
+                    // Reset all checkboxes first
                     document.querySelectorAll('input[name="jenjang[]"]').forEach(checkbox => {
-                        checkbox.checked = data.jenjang_sekolah.split(',').includes(checkbox.value);
+                        checkbox.checked = false;
                     });
-                    document.querySelector(`input[name="required"][value="${data.is_required ? 1 : 0}"]`).checked =
-                        true;
+                    
+                    // Check if we have multiple records with the same ID but different jenjang
+                    if (Array.isArray(data)) {
+                        // If we got an array of records with the same ID
+                        const uniqueJenjang = [...new Set(data.map(item => item.jenjang_sekolah))];
+                        
+                        document.querySelectorAll('input[name="jenjang[]"]').forEach(checkbox => {
+                            checkbox.checked = uniqueJenjang.includes(checkbox.value);
+                        });
+                        
+                        // Use the required value from the first item (should be the same for all)
+                        if (data.length > 0) {
+                            document.querySelector(`input[name="required"][value="${data[0].is_required ? 1 : 0}"]`).checked = true;
+                        }
+                    } else {
+                        // Handle single record (for backward compatibility)
+                        const jenjangArr = data.jenjang_sekolah.split(',');
+                        document.querySelectorAll('input[name="jenjang[]"]').forEach(checkbox => {
+                            checkbox.checked = jenjangArr.includes(checkbox.value);
+                        });
+                        document.querySelector(`input[name="required"][value="${data.is_required ? 1 : 0}"]`).checked = true;
+                    }
+                    
                     document.getElementById('berkasForm').setAttribute('data-id', id);
                     document.getElementById('modalTitle').textContent = 'Edit Ketentuan Berkas';
                     openModal('berkasModal');
@@ -518,9 +541,8 @@
             
             const id = this.getAttribute('data-id');
             const namaBerkas = document.getElementById('namaBerkas').value;
-            const jenjang = Array.from(document.querySelectorAll('input[name="jenjang[]"]:checked'))
-                .map(cb => cb.value)
-                .join(',');
+            const jenjangCheckboxes = Array.from(document.querySelectorAll('input[name="jenjang[]"]:checked'))
+                .map(cb => cb.value);
             const isRequired = document.querySelector('input[name="required"]:checked').value;
             
             if (!namaBerkas) {
@@ -528,31 +550,40 @@
                 return;
             }
             
-            if (!jenjang) {
+            if (jenjangCheckboxes.length === 0) {
                 showNotification('Pilih minimal satu jenjang sekolah', 'error');
                 return;
             }
-            
-            const data = {
-                nama: namaBerkas,
-                jenjang_sekolah: jenjang,
-                is_required: isRequired
-            };
-            
+
             try {
-                let response;
-                if (id) {
-                    response = await AwaitFetchApi(`admin/ketentuan-berkas/${id}`, 'PUT', data);
-                } else {
-                    response = await AwaitFetchApi('admin/ketentuan-berkas', 'POST', data);
-                }
+                // Send separate API requests for each selected jenjang
+                const promises = jenjangCheckboxes.map(jenjang => {
+                    const data = {
+                        nama: namaBerkas,
+                        jenjang_sekolah: jenjang,
+                        is_required: isRequired
+                    };
+                    
+                    if (id) {
+                        return AwaitFetchApi(`admin/ketentuan-berkas/${id}`, 'PUT', data);
+                    } else {
+                        return AwaitFetchApi('admin/ketentuan-berkas', 'POST', data);
+                    }
+                });
                 
-                if (response.meta?.code === 200 || response.meta?.code === 201) {
-                    showNotification(response.meta.message || 'Ketentuan berkas berhasil disimpan', 'success');
+                const responses = await Promise.all(promises);
+                
+                // Check if all requests were successful
+                const allSuccessful = responses.every(response => 
+                    response.meta?.code === 200 || response.meta?.code === 201
+                );
+                
+                if (allSuccessful) {
+                    showNotification('Semua ketentuan berkas berhasil disimpan', 'success');
                     closeModal('berkasModal');
                     loadKetentuanBerkas();
                 } else {
-                    showNotification(response.meta?.message || 'Gagal menyimpan ketentuan berkas', 'error');
+                    showNotification('Beberapa ketentuan berkas gagal disimpan', 'error');
                 }
             } catch (error) {
                 print.error('Error:', error);
