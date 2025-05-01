@@ -68,7 +68,7 @@
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <h3 id="modalTitle" class="text-lg font-medium leading-6 text-gray-900 mb-4">Tambah Biaya</h3>
-            <form id="biayaForm">
+            <form id="biayaForm" enctype="multipart/form-data">
                 <input type="hidden" id="biayaType" name="biayaType" value="pendaftaran">
                 
                 <div class="mb-4">
@@ -99,6 +99,12 @@
                                 <option value="SMA">SMA</option>
                                 <option value="SMK">SMK</option>
                             </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Upload Gambar</label>
+                            <input type="file" id="imageUpload" name="image" accept="image/*" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, GIF (Max: 2MB)</p>
                         </div>
                     </div>
                 </div>
@@ -447,23 +453,41 @@
                 
                 if (tipeKelas === 'reguler') {
                     const jenjangSekolah = document.getElementById('jenjangSekolah').value;
+                    const imageUpload = document.getElementById('imageUpload').files[0];
                     
                     if (!jenjangSekolah) {
                         showNotification('Jenjang sekolah harus dipilih', 'error');
                         return;
                     }
                     
-                    data.jenjang_sekolah = jenjangSekolah;
-                    data.jurusan = 'reguler';
+                    if (!imageUpload) {
+                        showNotification('Gambar harus diupload', 'error');
+                        return;
+                    }
                     
-                    if (id) {
-                        // For update
-                        endpoint = `admin/pengajuan-biaya/${id}`;
-                        response = await AwaitFetchApi(endpoint, 'PUT', data);
-                    } else {
-                        // For create
-                        endpoint = 'admin/pengajuan-biaya/reguler';
-                        response = await AwaitFetchApi(endpoint, 'POST', data);
+                    // For reguler, we need to upload the image first
+                    const formData = new FormData();
+                    formData.append('image', imageUpload);
+                    formData.append('jenjang_sekolah', jenjangSekolah);
+                    formData.append('jurusan', 'reguler');
+                    
+                    // Upload image and data to the media endpoint
+                    response = await AwaitFetchApi('admin/media/pengajuan-biaya', 'POST', formData, true);
+                    
+                    if (response.meta?.code === 201) {
+                        // If image upload successful, proceed with creating/updating pengajuan biaya
+                        data.jenjang_sekolah = jenjangSekolah;
+                        data.jurusan = 'reguler';
+                        
+                        if (id) {
+                            // For update
+                            endpoint = `admin/pengajuan-biaya/${id}`;
+                            response = await AwaitFetchApi(endpoint, 'PUT', data);
+                        } else {
+                            // For create
+                            endpoint = 'admin/pengajuan-biaya/reguler';
+                            response = await AwaitFetchApi(endpoint, 'POST', data);
+                        }
                     }
                 } else if (tipeKelas === 'unggulan') {
                     // For unggulan, we don't need jurusan anymore
