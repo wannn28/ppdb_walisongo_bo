@@ -149,7 +149,7 @@ function openModal(modalId, callback = null) {
         modal.classList.remove('hidden');
 
         // Set z-index to be very high
-        modal.style.zIndex = '9999999';
+        modal.style.zIndex = '9999';
         
         // Execute callback if provided
         if (typeof callback === 'function') {

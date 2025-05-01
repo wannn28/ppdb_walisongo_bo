@@ -53,6 +53,7 @@
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelas</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenjang</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gambar</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -106,6 +107,11 @@
                             <input type="file" id="imageUpload" name="image" accept="image/*" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                             <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, GIF (Max: 2MB)</p>
                         </div>
+                        
+                        <div id="imagePreviewContainer" class="mb-4 hidden">
+                            <label class="block text-gray-700 text-sm font-bold mb-2">Gambar Terkait</label>
+                            <div id="imagePreviewGrid" class="grid grid-cols-2 gap-2"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -123,6 +129,29 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div id="imagePreviewModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden flex items-center justify-center z-50 modal-container">
+    <div class="relative max-w-4xl w-full mx-4">
+        <button type="button" data-close-modal="imagePreviewModal" class="absolute top-2 right-2 bg-white rounded-full p-2 text-black hover:bg-gray-200">
+            <i class="fas fa-times"></i>
+        </button>
+        <img id="fullSizeImage" src="" alt="Preview" class="max-w-full max-h-[90vh] mx-auto">
+    </div>
+</div>
+
+<!-- Gallery Modal -->
+<div id="galleryModal" class="fixed inset-0 bg-gray-900 bg-opacity-80 hidden overflow-y-auto z-50 modal-container">
+    <div class="relative max-w-4xl w-full mx-auto mt-10 mb-10 bg-white rounded-lg shadow-xl p-6">
+        <button type="button" data-close-modal="galleryModal" class="absolute top-2 right-2 bg-gray-200 rounded-full p-2 text-black hover:bg-gray-300 z-[100]">
+            <i class="fas fa-times"></i>
+        </button>
+        <h3 class="text-lg font-medium mb-4">Galeri Gambar</h3>
+        <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <!-- Images will be populated here -->
         </div>
     </div>
 </div>
@@ -202,21 +231,33 @@
         });
         
         // Tipe Kelas change handler
-        document.getElementById('tipeKelas').addEventListener('change', function() {
+        document.getElementById('tipeKelas').addEventListener('change', async function() {
             const tipeKelas = this.value;
             
             // Hide fields first
             document.getElementById('regulerFields').classList.add('hidden');
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
             
             // Show relevant fields based on selection
             if (tipeKelas === 'reguler') {
                 document.getElementById('regulerFields').classList.remove('hidden');
+                
+                // If jenjang sekolah is selected, fetch and show images
+                const jenjangSekolah = document.getElementById('jenjangSekolah').value;
+                if (jenjangSekolah) {
+                    await loadImagesForJenjang(jenjangSekolah);
+                }
             }
         });
         
         // Jenjang Sekolah change handler
-        document.getElementById('jenjangSekolah').addEventListener('change', function() {
-            // We don't need to do anything here anymore
+        document.getElementById('jenjangSekolah').addEventListener('change', async function() {
+            const jenjangSekolah = this.value;
+            if (jenjangSekolah) {
+                await loadImagesForJenjang(jenjangSekolah);
+            } else {
+                document.getElementById('imagePreviewContainer').classList.add('hidden');
+            }
         });
         
         // Close modal buttons
@@ -286,6 +327,11 @@
         try {
             const response = await AwaitFetchApi('admin/pengajuan-biaya', 'GET');
             print.log('API Response - Pengajuan Biaya:', response);
+            
+            // Fetch media images for reguler
+            const mediaResponse = await AwaitFetchApi(`admin/media?search=pengajuan_biaya`, 'GET');
+            print.log('API Response - Media for table:', mediaResponse);
+            
             if (response.meta?.code === 200) {
                 const biayaList = response.data || [];
                 const tableBody = document.getElementById('pengajuanBiayaTableBody');
@@ -295,7 +341,7 @@
                 if (biayaList.length === 0) {
                     const emptyRow = document.createElement('tr');
                     emptyRow.innerHTML = `
-                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                             Tidak ada data pengajuan biaya
                         </td>
                     `;
@@ -311,6 +357,22 @@
                         ? `${biaya.jenjang_sekolah || '-'}`
                         : `-`; // For unggulan, no detail needed
                     
+                    // For reguler, check if images exist
+                    let hasImages = false;
+                    let imageUrls = [];
+                    if (biaya.jurusan === 'reguler' && mediaResponse.meta?.code === 200) {
+                        const relevantImages = mediaResponse.data.filter(
+                            img => img.jenjang_sekolah === biaya.jenjang_sekolah && 
+                                   img.jurusan === 'reguler' && 
+                                   img.nama === 'pengajuan_biaya'
+                        );
+                        
+                        if (relevantImages.length > 0) {
+                            hasImages = true;
+                            imageUrls = relevantImages.map(img => img.url);
+                        }
+                    }
+                    
                     row.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap">${biaya.id}</td>
                         <td class="px-6 py-4 whitespace-nowrap">Rp ${formatNumber(biaya.nominal)}</td>
@@ -321,6 +383,11 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             ${detail}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            ${hasImages ? 
+                                `<button class="text-blue-600 hover:text-blue-900" onclick='showGalleryModal(${JSON.stringify(imageUrls).replace(/'/g, "\\'")})'><i class="fas fa-eye text-lg"></i></button>` 
+                                : '-'}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button onclick="editBiaya('pengajuan', ${biaya.id})" class="text-blue-600 hover:text-blue-900 mr-3">
@@ -368,13 +435,55 @@
                         if (biaya.jenjang_sekolah) {
                             document.getElementById('jenjangSekolah').value = biaya.jenjang_sekolah;
                         }
+                        
+                        // Fetch images for this jenjang and display them
+                        const mediaResponse = await AwaitFetchApi(`admin/media?search=pengajuan_biaya`, 'GET');
+                        print.log('API Response - Media:', mediaResponse);
+                        
+                        if (mediaResponse.meta?.code === 200 && mediaResponse.data) {
+                            const imageContainer = document.getElementById('imagePreviewContainer');
+                            const imageGrid = document.getElementById('imagePreviewGrid');
+                            
+                            // Filter images for this jenjang_sekolah
+                            const relevantImages = mediaResponse.data.filter(
+                                img => img.jenjang_sekolah === biaya.jenjang_sekolah && 
+                                       img.jurusan === 'reguler' && 
+                                       img.nama === 'pengajuan_biaya'
+                            );
+                            
+                            if (relevantImages.length > 0) {
+                                imageGrid.innerHTML = '';
+                                
+                                // Add images to the preview grid
+                                relevantImages.forEach(image => {
+                                    const imageCard = document.createElement('div');
+                                    imageCard.className = 'relative border rounded overflow-hidden';
+                                    
+                                    imageCard.innerHTML = `
+                                        <img src="${image.url}" alt="Biaya ${biaya.jenjang_sekolah}" class="w-full h-32 object-cover">
+                                        <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600" 
+                                                onclick="deleteImage(${image.id}, event)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    `;
+                                    
+                                    imageGrid.appendChild(imageCard);
+                                });
+                                
+                                imageContainer.classList.remove('hidden');
+                            } else {
+                                imageContainer.classList.add('hidden');
+                            }
+                        }
                     } else {
                         document.getElementById('tipeKelas').value = 'unggulan';
                         document.getElementById('regulerFields').classList.add('hidden');
+                        document.getElementById('imagePreviewContainer').classList.add('hidden');
                     }
                 } else {
                     document.getElementById('pengajuanFields').classList.add('hidden');
                     document.getElementById('regulerFields').classList.add('hidden');
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
                 }
                 
                 document.getElementById('biayaForm').setAttribute('data-id', id);
@@ -472,7 +581,7 @@
                     formData.append('jurusan', 'reguler');
                     
                     // Upload image and data to the media endpoint
-                    response = await AwaitFetchApi('admin/media/pengajuan-biaya', 'POST', formData, true);
+                    response = await AwaitFetchApi('admin/media/pengajuan-biaya', 'POST', formData);
                     
                     if (response.meta?.code === 201) {
                         // If image upload successful, proceed with creating/updating pengajuan biaya
@@ -523,8 +632,118 @@
         }
     }
     
+    // Delete image function
+    async function deleteImage(id, event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        try {
+            const result = await showDeleteConfirmation('Apakah Anda yakin ingin menghapus gambar ini?');
+            
+            if (!result.isConfirmed) {
+                return;
+            }
+            
+            const response = await AwaitFetchApi(`admin/media/${id}`, 'DELETE');
+            print.log('Delete Image Response:', response);
+            
+            if (response.meta?.code === 200) {
+                showNotification(response.meta.message || 'Gambar berhasil dihapus', 'success');
+                
+                // Remove the image element from the DOM
+                const imageCard = event.target.closest('.relative');
+                if (imageCard) {
+                    imageCard.remove();
+                }
+                
+                // If there are no more images, hide the container
+                const imageGrid = document.getElementById('imagePreviewGrid');
+                if (imageGrid.children.length === 0) {
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
+                }
+            } else {
+                showNotification(response.meta?.message || 'Gagal menghapus gambar', 'error');
+            }
+        } catch (error) {
+            print.error('Error deleting image:', error);
+            showNotification('Terjadi kesalahan saat menghapus gambar', 'error');
+        }
+    }
+    
+    // Function to load images for a specific jenjang
+    async function loadImagesForJenjang(jenjangSekolah) {
+        try {
+            const mediaResponse = await AwaitFetchApi(`admin/media?search=pengajuan_biaya`, 'GET');
+            
+            if (mediaResponse.meta?.code === 200 && mediaResponse.data) {
+                const imageContainer = document.getElementById('imagePreviewContainer');
+                const imageGrid = document.getElementById('imagePreviewGrid');
+                
+                // Filter images for this jenjang_sekolah
+                const relevantImages = mediaResponse.data.filter(
+                    img => img.jenjang_sekolah === jenjangSekolah && 
+                           img.jurusan === 'reguler' && 
+                           img.nama === 'pengajuan_biaya'
+                );
+                
+                if (relevantImages.length > 0) {
+                    imageGrid.innerHTML = '';
+                    
+                    // Add images to the preview grid
+                    relevantImages.forEach(image => {
+                        const imageCard = document.createElement('div');
+                        imageCard.className = 'relative border rounded overflow-hidden';
+                        
+                        imageCard.innerHTML = `
+                            <img src="${image.url}" alt="Biaya ${jenjangSekolah}" class="w-full h-32 object-cover">
+                            <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600" 
+                                    onclick="deleteImage(${image.id}, event)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                        
+                        imageGrid.appendChild(imageCard);
+                    });
+                    
+                    imageContainer.classList.remove('hidden');
+                } else {
+                    imageContainer.classList.add('hidden');
+                }
+            }
+        } catch (error) {
+            print.error('Error loading images:', error);
+        }
+    }
+    
     function formatNumber(number) {
         return new Intl.NumberFormat('id-ID').format(number);
+    }
+    
+    // Function to open image preview modal
+    function openImagePreview(imageUrl) {
+        const fullSizeImage = document.getElementById('fullSizeImage');
+        fullSizeImage.src = imageUrl;
+        closeModal('galleryModal');
+        openModal('imagePreviewModal');
+    }
+    
+    // Function to show gallery modal with multiple images
+    function showGalleryModal(imageUrls) {
+        const galleryGrid = document.getElementById('galleryGrid');
+        galleryGrid.innerHTML = '';
+        
+        imageUrls.forEach(url => {
+            const imageCard = document.createElement('div');
+            imageCard.className = 'relative border rounded overflow-hidden';
+            
+            imageCard.innerHTML = `
+                <img src="${url}" alt="Biaya" class="w-full h-48 object-cover cursor-pointer" onclick="openImagePreview('${url}')">
+            `;
+            
+            galleryGrid.appendChild(imageCard);
+        });
+        
+        openModal('galleryModal');
     }
 </script>
 

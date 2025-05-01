@@ -1,8 +1,7 @@
 <nav id="sidebar" class="fixed top-0 left-0 h-screen bg-[#19274d] text-white shadow-lg transition-all duration-300 z-10">
   <div class="flex justify-between items-center p-4 border-b border-white/20">
     <div class="sidebar-header flex items-center justify-center">
-      <span class="text-green-400 font-bold text-lg">🌿</span>
-      <span class="ml-2 font-bold text-lg sidebar-text transition-opacity duration-300">WALISONGO</span>
+      <span class="ml-2 font-bold text-lg sidebar-text transition-opacity duration-300">ADMIN WALISONGO</span>
     </div>
     <button id="sidebar-toggle-btn" class="text-white hover:text-green-400 transition-transform duration-300">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
