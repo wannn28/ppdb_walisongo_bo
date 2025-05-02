@@ -86,7 +86,7 @@
                         <select id="tipeKelas" name="tipe_kelas" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                             <option value="">Pilih Kelas</option>
                             <option value="reguler">Reguler</option>
-                            <option value="unggulan">Unggulan</option>
+                            <option value="unggulan">Unggulan (Booking Vee)</option>
                         </select>
                     </div>
                     
@@ -352,7 +352,7 @@
                 biayaList.forEach((biaya, index) => {
                     const row = document.createElement('tr');
                     
-                    let kelas = biaya.jurusan === 'reguler' ? 'Reguler' : 'Unggulan';
+                    let kelas = biaya.jurusan === 'reguler' ? 'Reguler' : 'Unggulan (Booking Vee)';
                     let detail = biaya.jurusan === 'reguler' 
                         ? `${biaya.jenjang_sekolah || '-'}`
                         : `-`; // For unggulan, no detail needed
