@@ -349,8 +349,8 @@
                     <td class="px-6 py-4 whitespace-nowrap">${transaksi.method || '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap">${transaksi.va_number || transaksi.transaction_qr_id || '-'}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div>${transaksi.created_time ? new Date(transaksi.created_time).toLocaleTimeString() : '-'}</div>
-                        <div class="text-sm text-gray-500">${transaksi.created_time ? formatDate(transaksi.created_time) : '-'}</div>
+                        <div>${isValidDate(transaksi.created_at) ? new Date(transaksi.created_at).toLocaleTimeString() : (isValidDate(transaksi.created_time) ? new Date(transaksi.created_time).toLocaleTimeString() : transaksi.created_time || '-')}</div>
+                        <div class="text-sm text-gray-500">${isValidDate(transaksi.created_at) ? formatDate(transaksi.created_at) : (isValidDate(transaksi.created_time) ? formatDate(transaksi.created_time) : '-')}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewTransaksiDetail(${transaksi.id})">
@@ -382,6 +382,7 @@
     
     function formatDate(date) {
         if (!date) return '-';
+        if (!isValidDate(date)) return date;
         return new Date(date).toLocaleDateString('id-ID', {
             day: '2-digit',
             month: 'short',
@@ -424,10 +425,14 @@
                 document.getElementById('detail-method').textContent = transaksi.method || '-';
                 document.getElementById('detail-va').textContent = transaksi.va_number || '-';
                 document.getElementById('detail-qr').textContent = transaksi.transaction_qr_id || '-';
-                document.getElementById('detail-time').textContent = transaksi.created_time ? new Date(transaksi.created_time).toLocaleString() : '-';
+                document.getElementById('detail-time').textContent = isValidDate(transaksi.created_at) ? 
+                    new Date(transaksi.created_at).toLocaleString() : (isValidDate(transaksi.created_time) ? 
+                    new Date(transaksi.created_time).toLocaleString() : (transaksi.created_time || '-'));
                 
-                document.getElementById('detail-created').textContent = transaksi.created_at ? new Date(transaksi.created_at).toLocaleString() : '-';
-                document.getElementById('detail-updated').textContent = transaksi.updated_at ? new Date(transaksi.updated_at).toLocaleString() : '-';
+                document.getElementById('detail-created').textContent = isValidDate(transaksi.created_at) ? 
+                    new Date(transaksi.created_at).toLocaleString() : (transaksi.created_at || '-');
+                document.getElementById('detail-updated').textContent = isValidDate(transaksi.updated_at) ? 
+                    new Date(transaksi.updated_at).toLocaleString() : (transaksi.updated_at || '-');
                 document.getElementById('detail-userid').textContent = transaksi.user_id || (transaksi.user ? transaksi.user.id : '-');
                 
                 // Add peserta name to the modal
@@ -679,6 +684,20 @@
     
     function closeModal(modalId) {
         document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Helper function to validate date strings
+    function isValidDate(dateString) {
+        if (!dateString) return false;
+        
+        // Check if dateString is a proper date format that JavaScript can parse
+        const timestamp = Date.parse(dateString);
+        if (isNaN(timestamp)) return false;
+        
+        // Additional check to handle strings that might be parsed as dates but aren't intended to be
+        if (typeof dateString === 'string' && dateString.length <= 2) return false;
+        
+        return true;
     }
 </script>
 @endsection
