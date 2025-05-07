@@ -61,8 +61,12 @@
                                 <span class="ml-2">SD</span>
                             </label>
                             <label class="inline-flex items-center">
-                                <input type="checkbox" name="jenjang[]" value="SMP" class="form-checkbox">
-                                <span class="ml-2">SMP</span>
+                                <input type="checkbox" name="jenjang[]" value="SMP 1" class="form-checkbox">
+                                <span class="ml-2">SMP 1</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" name="jenjang[]" value="SMP 2" class="form-checkbox">
+                                <span class="ml-2">SMP 2</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="checkbox" name="jenjang[]" value="SMA" class="form-checkbox">
@@ -232,7 +236,7 @@
             ketentuanBerkas.forEach(item => {
                 // Handle kemungkinan penulisan jenjang salah
                 const jenjang = item.jenjang_sekolah.toUpperCase().trim();
-                const jenjangArray = jenjang.split(',').filter(j => ['SD', 'SMP', 'SMA', 'SMK'].includes(j));
+                const jenjangArray = jenjang.split(',').filter(j => ['SD', 'SMP 1', 'SMP 2', 'SMA', 'SMK'].includes(j));
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -291,7 +295,7 @@
                 
                 ketentuanBerkas.forEach(item => {
                     const jenjang = item.jenjang_sekolah.toUpperCase().trim();
-                    const jenjangArray = jenjang.split(',').filter(j => ['SD', 'SMP', 'SMA', 'SMK'].includes(j));
+                    const jenjangArray = jenjang.split(',').filter(j => ['SD', 'SMP 1', 'SMP 2', 'SMA', 'SMK'].includes(j));
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `

@@ -47,7 +47,11 @@
                 </div>
                 <div class="flex-1 flex flex-col items-center">
                     <div class="bg-green-500 w-full h-48 rounded-t-md"></div>
-                    <div class="mt-2">SMP</div>
+                    <div class="mt-2">SMP 1</div>
+                </div>
+                <div class="flex-1 flex flex-col items-center">
+                    <div class="bg-green-500 w-full h-48 rounded-t-md"></div>
+                    <div class="mt-2">SMP 2</div>
                 </div>
                 <div class="flex-1 flex flex-col items-center">
                     <div class="bg-purple-500 w-full h-36 rounded-t-md"></div>

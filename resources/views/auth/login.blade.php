@@ -8,16 +8,22 @@
                 Login Admin
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
-                Silakan masuk dengan nomor telepon Anda
+                Silakan masuk dengan nomor telepon dan password Anda
             </p>
         </div>
         <div class="mt-8 space-y-6">
-            <div class="rounded-md shadow-sm">
+            <div class="rounded-md shadow-sm space-y-4">
                 <div>
                     <label for="phoneInput" class="sr-only">Nomor Telepon</label>
                     <input id="phoneInput" name="no_telp" type="tel" required 
                            class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
                            placeholder="Masukkan nomor telepon">
+                </div>
+                <div>
+                    <label for="passwordInput" class="sr-only">Password</label>
+                    <input id="passwordInput" name="password" type="password" required 
+                           class="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm" 
+                           placeholder="Masukkan password">
                 </div>
             </div>
 
@@ -38,20 +44,27 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');
     const phoneInput = document.getElementById('phoneInput');
+    const passwordInput = document.getElementById('passwordInput');
 
     // Kosongkan token saat membuka halaman login
     localStorage.setItem('token', '');
 
     loginBtn.addEventListener('click', async () => {
         const no_telp = phoneInput.value;
+        const password = passwordInput.value;
 
         if (!no_telp) {
             showNotification("Nomor HP wajib diisi!", "error");
             return;
         }
 
+        if (!password) {
+            showNotification("Password wajib diisi!", "error");
+            return;
+        }
+
         try {
-            const response = await AwaitFetchApi('auth/login', 'POST', { no_telp }, true);
+            const response = await AwaitFetchApi('auth/login', 'POST', { no_telp, password }, true);
             if (response && response.meta?.code === 200) {
                 localStorage.setItem('token', response.data.token);
                 window.location.href = '/';
@@ -64,6 +77,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Tambahkan event listener untuk enter key
     phoneInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            passwordInput.focus();
+        }
+    });
+
+    passwordInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             loginBtn.click();
         }

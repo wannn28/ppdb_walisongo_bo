@@ -96,7 +96,8 @@
                             <select id="jenjangSekolah" name="jenjang_sekolah" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                                 <option value="">Pilih Jenjang</option>
                                 <option value="SD">SD</option>
-                                <option value="SMP">SMP</option>
+                                <option value="SMP 1">SMP 1</option>
+                                <option value="SMP 2">SMP 2</option>
                                 <option value="SMA">SMA</option>
                                 <option value="SMK">SMK</option>
                             </select>
