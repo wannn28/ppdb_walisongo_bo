@@ -89,6 +89,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a href="{{ route('angkatan') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('angkatan') ? 'bg-white/10' : '' }}">
+              <span class="nav-icon flex items-center justify-center min-w-[20px]">📋</span>
+              <span class="sidebar-text ml-3 transition-opacity duration-300">Angkatan</span>
+            </a>
+          </li>
+          <li class="nav-item">
             <a href="{{ route('pekerjaan-ortu') }}" class="flex items-center px-4 py-2 hover:bg-white/10 rounded mx-2 {{ request()->routeIs('pekerjaan-ortu') ? 'bg-white/10' : '' }}">
               <span class="nav-icon flex items-center justify-center min-w-[20px]">👨‍💼</span>
               <span class="sidebar-text ml-3 transition-opacity duration-300">Pekerjaan Ortu</span>

@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await AwaitFetchApi('auth/login', 'POST', { no_telp, password }, true);
+            const response = await AwaitFetchApi('auth/login-admin', 'POST', { no_telp, password }, true);
             if (response && response.meta?.code === 200) {
                 localStorage.setItem('token', response.data.token);
                 window.location.href = '/';

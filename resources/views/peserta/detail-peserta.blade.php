@@ -28,6 +28,7 @@
                         <x-sortable-header column="jenis_kelamin" label="Gender" />
                         <x-sortable-header column="no_telp" label="Kontak" />
                         <x-sortable-header column="jenjang_sekolah" label="Jenjang" />
+                        <x-sortable-header column="angkatan" label="Angkatan" />
                         <x-sortable-header column="status" label="Status" />
                         <x-sortable-header column="penghasilan_ortu" label="Penghasilan Ortu" />
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -420,6 +421,11 @@
                         ${peserta.jenjang_sekolah || '-'}
                     </span>
                     ${peserta.jurusan1 ? `<div class="text-xs mt-1">Kelas : ${peserta.jurusan1.jurusan || '-'}</div>` : ''}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">
+                        ${peserta.angkatan || '-'}
+                    </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     ${statusBadge}

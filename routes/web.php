@@ -84,6 +84,9 @@ Route::get('/pengaturan-biaya', function () {
 Route::get('/peringkat', function () {
     return view('transaksi.peringkat');
 })->name('peringkat');
+Route::get('/angkatan', function () {
+    return view('peserta.angkatan');
+})->name('angkatan');
 
 // Logout Route (dummy)
 Route::post('/logout', function () {
