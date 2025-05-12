@@ -127,6 +127,18 @@
                             <p class="mt-1" id="detail-telp">-</p>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-700">NIS</label>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input type="text" id="detail-nis-input" 
+                                    class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    placeholder="Masukkan NIS">
+                                <button onclick="updateNisPeserta()"
+                                    class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                    <i class="fas fa-save"></i> Simpan
+                                </button>
+                            </div>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-700">Status</label>
                             <div class="mt-1 flex items-center gap-2">
                                 <select id="detail-status"
@@ -208,6 +220,15 @@
                         <span>ID Peserta:</span>
                         <p id="detail-id" class="font-medium">-</p>
                     </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Berkas Peserta</h4>
+                <div id="berkas-container" class="grid grid-cols-1 gap-4">
+                    <p id="berkas-loading" class="text-gray-500">Memuat berkas...</p>
+                    <div id="berkas-list" class="hidden space-y-2"></div>
+                    <p id="berkas-empty" class="hidden text-gray-500">Belum ada berkas yang diunggah.</p>
                 </div>
             </div>
         </div>
@@ -385,7 +406,7 @@
             if (pesertas.length === 0) {
                 const emptyRow = `
             <tr>
-                <td colspan="10" class="px-6 py-4 text-center text-gray-500">
+                <td colspan="12" class="px-6 py-4 text-center text-gray-500">
                     Tidak ada data peserta yang ditemukan
                 </td>
             </tr>
@@ -643,6 +664,9 @@
                     document.getElementById('detail-gender').textContent = peserta.jenis_kelamin || '-';
                     document.getElementById('detail-alamat').textContent = peserta.alamat || '-';
                     document.getElementById('detail-telp').textContent = peserta.no_telp || '-';
+                    
+                    // Set current NIS value in the input field
+                    document.getElementById('detail-nis-input').value = peserta.nis || '';
 
                     // Set the status dropdown value
                     const statusDropdown = document.getElementById('detail-status');
@@ -726,6 +750,9 @@
                         .created_at).toLocaleString() : '-';
                     document.getElementById('detail-updated').textContent = peserta.updated_at ? new Date(peserta
                         .updated_at).toLocaleString() : '-';
+                    
+                    // Load berkas for this peserta
+                    loadBerkasPeserta(peserta.id);
 
                     // Show the modal using the global function
                     openModal('detailModal');
@@ -1035,6 +1062,107 @@
                 confirmButtonText: confirmText,
                 cancelButtonText: cancelText
             });
+        }
+
+        async function loadBerkasPeserta(pesertaId) {
+            // Reset berkas container state
+            document.getElementById('berkas-loading').classList.remove('hidden');
+            document.getElementById('berkas-list').classList.add('hidden');
+            document.getElementById('berkas-empty').classList.add('hidden');
+            
+            try {
+                const response = await AwaitFetchApi(`admin/berkas/peserta/${pesertaId}`, 'GET');
+                
+                document.getElementById('berkas-loading').classList.add('hidden');
+                
+                if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
+                    const berkasList = document.getElementById('berkas-list');
+                    berkasList.innerHTML = '';
+                    berkasList.classList.remove('hidden');
+                    
+                    response.data.forEach(berkas => {
+                        const berkasItem = document.createElement('div');
+                        berkasItem.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center';
+                        
+                        const berkasName = document.createElement('div');
+                        berkasName.className = 'flex items-center gap-2';
+                        
+                        // Determine file icon based on file type/extension
+                        const fileUrl = berkas.url_file || '';
+                        const fileExt = fileUrl ? fileUrl.split('.').pop().toLowerCase() : '';
+                        let fileIcon = 'fa-file';
+                        
+                        if (['pdf'].includes(fileExt)) {
+                            fileIcon = 'fa-file-pdf';
+                        } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
+                            fileIcon = 'fa-file-image';
+                        } else if (['doc', 'docx'].includes(fileExt)) {
+                            fileIcon = 'fa-file-word';
+                        } else if (['xls', 'xlsx'].includes(fileExt)) {
+                            fileIcon = 'fa-file-excel';
+                        }
+                        
+                        berkasName.innerHTML = `
+                            <i class="fas ${fileIcon} text-blue-500"></i>
+                            <span>${berkas.nama_file || 'Berkas'}</span>
+                        `;
+                        
+                        const berkasActions = document.createElement('div');
+                        berkasActions.className = 'flex gap-2';
+                        
+                        // View button
+                        if (berkas.url_file) {
+                            const viewBtn = document.createElement('a');
+                            viewBtn.href = berkas.url_file;
+                            viewBtn.target = '_blank';
+                            viewBtn.className = 'px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm';
+                            viewBtn.innerHTML = '<i class="fas fa-eye mr-1"></i> Lihat';
+                            berkasActions.appendChild(viewBtn);
+                        }
+                        
+                        berkasItem.appendChild(berkasName);
+                        berkasItem.appendChild(berkasActions);
+                        berkasList.appendChild(berkasItem);
+                    });
+                } else {
+                    document.getElementById('berkas-empty').classList.remove('hidden');
+                }
+            } catch (error) {
+                print.error('Error fetching berkas data:', error);
+                document.getElementById('berkas-loading').classList.add('hidden');
+                document.getElementById('berkas-empty').classList.remove('hidden');
+                document.getElementById('berkas-empty').textContent = 'Gagal memuat data berkas.';
+            }
+        }
+
+        async function updateNisPeserta() {
+            if (!currentPesertaId) {
+                showNotification('ID Peserta tidak valid', 'error');
+                return;
+            }
+
+            const nis = document.getElementById('detail-nis-input').value.trim();
+            
+            if (!nis) {
+                showNotification('NIS tidak boleh kosong', 'error');
+                return;
+            }
+
+            try {
+                const response = await AwaitFetchApi(`admin/peserta/nis/${currentPesertaId}`, 'PUT', {
+                    nis
+                });
+
+                if (response.meta?.code === 200) {
+                    showNotification('NIS peserta berhasil diperbarui', 'success');
+                    loadPesertaData(currentPage); // Refresh the table
+                } else {
+                    showNotification(`Gagal memperbarui NIS: ${response.meta?.message}`, 'error');
+                }
+            } catch (error) {
+                print.error('Error updating peserta NIS:', error);
+                showNotification('Terjadi kesalahan saat memperbarui NIS peserta', 'error');
+            }
         }
     </script>
 @endsection
