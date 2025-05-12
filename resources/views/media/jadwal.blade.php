@@ -226,8 +226,6 @@ document.getElementById('jadwalForm').addEventListener('submit', async function(
             showNotification(response.meta.message || 'Jadwal berhasil disimpan', 'success');
             closeModal('jadwalModal');
             loadJadwal();
-        } else {
-            showNotification(response.meta?.message || 'Gagal menyimpan jadwal', 'error');
         }
     } catch (error) {
         print.error('Error:', error);
