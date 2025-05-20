@@ -5,15 +5,52 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-6">
             <h1 class="text-2xl font-bold mb-4 md:mb-0">Detail Peserta PPDB</h1>
             <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                <x-search placeholder="Cari Peserta..." searchFunction="searchPeserta"
-                    additionalClasses="bg-transparent shadow-none p-0 w-full sm:w-auto" />
+                <button class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+                    onclick="exportToExcel()">
+                    <i class="fas fa-file-excel mr-2"></i> Export Excel
+                </button>
                 <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center"
                     onclick="openModal('trashModal')">
                     <i class="fas fa-trash mr-2"></i> Trash
                 </button>
             </div>
         </div>
-        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+
+        <!-- Filter Controls -->
+        <x-filter resetFunction="resetFilters">
+            <x-filter-text 
+                id="searchInput" 
+                label="Cari Peserta" 
+                placeholder="Cari nama, nisn..." 
+                onChangeFunction="updateSearchFilter" />
+            
+            <x-filter-select 
+                id="statusFilter" 
+                label="Status" 
+                :options="[''=>'Semua Status', 'diterima'=>'Diterima', 'ditolak'=>'Ditolak', 'diproses'=>'Diproses']" 
+                onChangeFunction="updateStatusFilter" />
+            
+            <x-filter-select 
+                id="jenjangFilter" 
+                label="Jenjang" 
+                :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP'=>'SMP', 'SMA'=>'SMA']" 
+                onChangeFunction="updateJenjangFilter" />
+                
+            <x-filter-select 
+                id="angkatanFilter" 
+                label="Angkatan" 
+                :options="[''=>'Semua Angkatan', '2023'=>'2023', '2024'=>'2024', '2025'=>'2025']" 
+                onChangeFunction="updateAngkatanFilter" />
+            
+            <x-filter-date-range 
+                startId="startDate" 
+                endId="endDate" 
+                label="Tanggal Daftar" 
+                onStartChangeFunction="updateStartDateFilter" 
+                onEndChangeFunction="updateEndDateFilter" />
+        </x-filter>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-x-auto mt-6">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -35,7 +72,7 @@
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
                         <x-sortable-header column="angkatan" label="Angkatan"
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
-                        <x-sortable-header column="status" label="Status"
+                        <x-sortable-header column="status" label="Verifikasi Berkas"
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
                         <x-sortable-header column="penghasilan_ortu" label="Penghasilan Ortu"
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
@@ -103,139 +140,146 @@
         <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium leading-6 text-gray-900">Detail Peserta PPDB</h3>
-                <button data-close-modal="detailModal" class="text-gray-400 hover:text-gray-500">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="exportToPdf()" class="text-green-600 hover:text-green-800">
+                        <i class="fas fa-file-pdf text-lg"></i> <span class="text-sm">Export PDF</span>
+                    </button>
+                    <button data-close-modal="detailModal" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                    <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Pribadi</h4>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">NISN</label>
-                            <p class="mt-1" id="detail-nisn">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                            <p class="mt-1" id="detail-nama">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Tempat, Tanggal Lahir</label>
-                            <p class="mt-1" id="detail-ttl">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
-                            <p class="mt-1" id="detail-gender">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Alamat</label>
-                            <p class="mt-1" id="detail-alamat">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
-                            <p class="mt-1" id="detail-telp">-</p>
-                        </div>
+            <div id="pdf-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Pribadi</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NISN</label>
+                                <p class="mt-1" id="detail-nisn">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                                <p class="mt-1" id="detail-nama">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tempat, Tanggal Lahir</label>
+                                <p class="mt-1" id="detail-ttl">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                                <p class="mt-1" id="detail-gender">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Alamat</label>
+                                <p class="mt-1" id="detail-alamat">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
+                                <p class="mt-1" id="detail-telp">-</p>
+                            </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Status</label>
-                            <div class="mt-1 flex items-center gap-2">
-                                <select id="detail-status"
-                                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                    <option value="proses">Proses</option>
-                                    <option value="diterima">Diterima</option>
-                                    <option value="ditolak">Ditolak</option>
-                                </select>
-                                <button onclick="updatePesertaStatus()"
-                                    class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                                    <i class="fas fa-save"></i> Simpan
-                                </button>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Verifikasi Berkas</label>
+                                <div class="mt-1 flex items-center gap-2">
+                                    <select id="detail-status"
+                                        class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                                        <option value="proses">Proses</option>
+                                        <option value="diterima">Diterima</option>
+                                        <option value="ditolak">Ditolak</option>
+                                    </select>
+                                    <button onclick="updatePesertaStatus()"
+                                        class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                        <i class="fas fa-save"></i> Simpan
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NIS</label>
+                                <div class="mt-1 flex items-center gap-2">
+                                    <input type="text" id="detail-nis-input"
+                                        class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                        placeholder="Masukkan NIS">
+                                    <button onclick="updateNisPeserta()"
+                                        class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                        <i class="fas fa-save"></i> Simpan
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">NIS</label>
-                            <div class="mt-1 flex items-center gap-2">
-                                <input type="text" id="detail-nis-input"
-                                    class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                    placeholder="Masukkan NIS">
-                                <button onclick="updateNisPeserta()"
-                                    class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                                    <i class="fas fa-save"></i> Simpan
-                                </button>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Informasi Pendidikan</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jenjang Sekolah</label>
+                                <p class="mt-1" id="detail-jenjang">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pilihan Kelas</label>
+                                <p class="mt-1" id="detail-jurusan1">-</p>
+                            </div>
+                            <div id="detail-user-container" class="border-t border-gray-200 mt-4 pt-4">
+                                <label class="block text-sm font-medium text-gray-700">ID User</label>
+                                <p class="mt-1" id="detail-user-id">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Orang Tua</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Ayah</label>
+                                <p class="mt-1" id="detail-nama-ayah">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
+                                <p class="mt-1" id="detail-pekerjaan-ayah">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
+                                <p class="mt-1" id="detail-nama-ibu">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
+                                <p class="mt-1" id="detail-pekerjaan-ibu">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
+                                <p class="mt-1" id="detail-penghasilan-ortu">-</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Informasi Pendidikan</h4>
-                    <div class="space-y-3">
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Informasi Tambahan</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Jenjang Sekolah</label>
-                            <p class="mt-1" id="detail-jenjang">-</p>
+                            <span>Terdaftar pada:</span>
+                            <p id="detail-created" class="font-medium">-</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Pilihan Kelas</label>
-                            <p class="mt-1" id="detail-jurusan1">-</p>
+                            <span>Terakhir diupdate:</span>
+                            <p id="detail-updated" class="font-medium">-</p>
                         </div>
-                        <div id="detail-user-container" class="border-t border-gray-200 mt-4 pt-4">
-                            <label class="block text-sm font-medium text-gray-700">ID User</label>
-                            <p class="mt-1" id="detail-user-id">-</p>
+                        <div>
+                            <span>ID Peserta:</span>
+                            <p id="detail-id" class="font-medium">-</p>
                         </div>
                     </div>
                 </div>
 
-                <div>
-                    <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Orang Tua</h4>
-                    <div class="space-y-3">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nama Ayah</label>
-                            <p class="mt-1" id="detail-nama-ayah">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
-                            <p class="mt-1" id="detail-pekerjaan-ayah">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
-                            <p class="mt-1" id="detail-nama-ibu">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
-                            <p class="mt-1" id="detail-pekerjaan-ibu">-</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
-                            <p class="mt-1" id="detail-penghasilan-ortu">-</p>
-                        </div>
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Berkas Peserta</h4>
+                    <div id="berkas-container" class="grid grid-cols-1 gap-4">
+                        <p id="berkas-loading" class="text-gray-500">Memuat berkas...</p>
+                        <div id="berkas-list" class="hidden space-y-2"></div>
+                        <p id="berkas-empty" class="hidden text-gray-500">Belum ada berkas yang diunggah.</p>
                     </div>
-                </div>
-            </div>
-
-            <div class="mt-6">
-                <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Informasi Tambahan</h4>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
-                    <div>
-                        <span>Terdaftar pada:</span>
-                        <p id="detail-created" class="font-medium">-</p>
-                    </div>
-                    <div>
-                        <span>Terakhir diupdate:</span>
-                        <p id="detail-updated" class="font-medium">-</p>
-                    </div>
-                    <div>
-                        <span>ID Peserta:</span>
-                        <p id="detail-id" class="font-medium">-</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-6">
-                <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Berkas Peserta</h4>
-                <div id="berkas-container" class="grid grid-cols-1 gap-4">
-                    <p id="berkas-loading" class="text-gray-500">Memuat berkas...</p>
-                    <div id="berkas-list" class="hidden space-y-2"></div>
-                    <p id="berkas-empty" class="hidden text-gray-500">Belum ada berkas yang diunggah.</p>
                 </div>
             </div>
         </div>
@@ -345,6 +389,73 @@
         let allPeserta = [];
         let trashCurrentPage = 1;
         let trashTotalPages = 1;
+        let filters = {
+            search: '',
+            status: '',
+            jenjang_sekolah: '',
+            angkatan: '',
+            start_date: '',
+            end_date: ''
+        };
+
+        // Filter functions
+        function updateSearchFilter(value) {
+            filters.search = value;
+            currentPage = 1; // Reset to first page when filtering
+            loadPesertaData();
+        }
+        
+        function updateStatusFilter(value) {
+            filters.status = value;
+            currentPage = 1;
+            loadPesertaData();
+        }
+        
+        function updateJenjangFilter(value) {
+            filters.jenjang_sekolah = value;
+            currentPage = 1;
+            loadPesertaData();
+        }
+        
+        function updateAngkatanFilter(value) {
+            filters.angkatan = value;
+            currentPage = 1;
+            loadPesertaData();
+        }
+        
+        function updateStartDateFilter(value) {
+            filters.start_date = value;
+            currentPage = 1;
+            loadPesertaData();
+        }
+        
+        function updateEndDateFilter(value) {
+            filters.end_date = value;
+            currentPage = 1;
+            loadPesertaData();
+        }
+        
+        function resetFilters() {
+            filters = {
+                search: '',
+                status: '',
+                jenjang_sekolah: '',
+                angkatan: '',
+                start_date: '',
+                end_date: ''
+            };
+            
+            // Reset form inputs
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('jenjangFilter').value = '';
+            document.getElementById('angkatanFilter').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            
+            currentPage = 1;
+            loadPesertaData();
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadPesertaData();
@@ -359,13 +470,6 @@
             document.getElementById('next-page').addEventListener('click', () => {
                 if (currentPage < totalPages) {
                     loadPesertaData(currentPage + 1);
-                }
-            });
-
-            // Setup search input listener
-            document.getElementById('searchInput').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    searchPeserta();
                 }
             });
 
@@ -395,8 +499,23 @@
                     clientSideSorting = true;
                 }
 
-                const url =
-                    `admin/pesertas?page=${page}&per_page=${perPage}&sort_by=${sortField}&order_by=${sortDirection}${searchTerm ? '&search=' + searchTerm : ''}`;
+                // Construct the URL with all filters
+                const params = new URLSearchParams({
+                    page: page,
+                    per_page: perPage,
+                    sort_by: sortField,
+                    order_by: sortDirection
+                });
+
+                // Add filters to params if they have values
+                if (filters.search) params.append('search', filters.search);
+                if (filters.status) params.append('status', filters.status);
+                if (filters.jenjang_sekolah) params.append('jenjang_sekolah', filters.jenjang_sekolah);
+                if (filters.angkatan) params.append('angkatan', filters.angkatan);
+                if (filters.start_date) params.append('start_date', filters.start_date);
+                if (filters.end_date) params.append('end_date', filters.end_date);
+
+                const url = `admin/pesertas?${params.toString()}`;
                 const response = await AwaitFetchApi(url, 'GET');
 
                 if (response?.data) {
@@ -566,12 +685,6 @@
             if (element) {
                 element.innerHTML = indicator;
             }
-        }
-
-        function searchPeserta() {
-            searchTerm = document.getElementById('searchInput').value.trim();
-            currentPage = 1; // Reset to first page when searching
-            loadPesertaData(currentPage);
         }
 
         function updatePagination(pagination) {
@@ -820,7 +933,7 @@
                 });
 
                 if (response.meta?.code === 200) {
-                    showNotification('Status peserta berhasil diperbarui', 'success');
+                    showNotification('Verifikasi berkas peserta berhasil diperbarui', 'success');
                     loadPesertaData(currentPage); // Refresh the table
                 } else {
                     showNotification(`Gagal memperbarui status: ${response.meta?.message}`, 'error');
@@ -1186,5 +1299,362 @@
                 showNotification('Terjadi kesalahan saat memperbarui NIS peserta', 'error');
             }
         }
+
+        // Export to Excel function
+        async function exportToExcel() {
+            try {
+                showNotification('Mempersiapkan data untuk export...', 'info');
+                
+                // Get current filters - create a copy
+                const exportFilters = {...filters};
+                
+                // Make sure to only export peserta with status 'diterima' if not already filtered
+                if (!exportFilters.status) {
+                    exportFilters.status = 'diterima';
+                }
+                
+                // Construct the URL with all filters but with max per_page
+                const params = new URLSearchParams({
+                    page: 1,
+                    per_page: 1000, // Set a high value to get all data in one request
+                    sort_by: sortBy,
+                    order_by: sortDirection
+                });
+                
+                // Add filters to params if they have values
+                if (exportFilters.search) params.append('search', exportFilters.search);
+                if (exportFilters.status) params.append('status', exportFilters.status);
+                if (exportFilters.jenjang_sekolah) params.append('jenjang_sekolah', exportFilters.jenjang_sekolah);
+                if (exportFilters.angkatan) params.append('angkatan', exportFilters.angkatan);
+                if (exportFilters.start_date) params.append('start_date', exportFilters.start_date);
+                if (exportFilters.end_date) params.append('end_date', exportFilters.end_date);
+                
+                const url = `admin/pesertas?${params.toString()}`;
+                const response = await AwaitFetchApi(url, 'GET');
+                
+                if (!response?.data || response.data.length === 0) {
+                    showNotification('Tidak ada data untuk di-export', 'warning');
+                    return;
+                }
+                
+                // Format data for Excel
+                const exportData = response.data.map(peserta => {
+                    // Determine penghasilan ortu
+                    let penghasilanOrtu = '';
+                    if (peserta.penghasilan_ortu) {
+                        if (typeof peserta.penghasilan_ortu === 'object') {
+                            penghasilanOrtu = peserta.penghasilan_ortu.penghasilan || '';
+                        } else {
+                            penghasilanOrtu = peserta.penghasilan_ortu;
+                        }
+                    } else if (peserta.biodata_ortu && peserta.biodata_ortu.penghasilan_ortu) {
+                        if (typeof peserta.biodata_ortu.penghasilan_ortu === 'object') {
+                            penghasilanOrtu = peserta.biodata_ortu.penghasilan_ortu.penghasilan || '';
+                        } else {
+                            penghasilanOrtu = peserta.biodata_ortu.penghasilan_ortu;
+                        }
+                    }
+                    
+                    // Determine nama ayah
+                    let namaAyah = '';
+                    if (peserta.biodata_ortu && peserta.biodata_ortu.nama_ayah) {
+                        namaAyah = peserta.biodata_ortu.nama_ayah;
+                    }
+                    
+                    // Determine nama ibu
+                    let namaIbu = '';
+                    if (peserta.biodata_ortu && peserta.biodata_ortu.nama_ibu) {
+                        namaIbu = peserta.biodata_ortu.nama_ibu;
+                    }
+                    
+                    return {
+                        'ID': peserta.id,
+                        'NISN': peserta.nisn || '',
+                        'NIS': peserta.nis || '',
+                        'Nama Lengkap': peserta.nama || '',
+                        'Tempat Lahir': peserta.tempat_lahir || '',
+                        'Tanggal Lahir': peserta.tanggal_lahir ? new Date(peserta.tanggal_lahir).toLocaleDateString() : '',
+                        'Jenis Kelamin': peserta.jenis_kelamin || '',
+                        'Alamat': peserta.alamat || '',
+                        'No. Telepon': peserta.no_telp || '',
+                        'Jenjang': peserta.jenjang_sekolah || '',
+                        'Angkatan': peserta.angkatan || '',
+                        'Status': peserta.status || '',
+                        'Nama Ayah': namaAyah,
+                        'Nama Ibu': namaIbu,
+                        'Penghasilan Ortu': penghasilanOrtu,
+                    };
+                });
+                
+                // Convert to worksheet
+                const worksheet = XLSX.utils.json_to_sheet(exportData);
+                
+                // Create workbook and add the worksheet
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Peserta PPDB');
+                
+                // Generate Excel file
+                const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+                
+                // Save to file
+                const today = new Date();
+                const dateStr = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+                
+                // Create filename with filters
+                let filename = `Peserta_PPDB_${dateStr}`;
+                if (exportFilters.status) filename += `_${exportFilters.status}`;
+                if (exportFilters.jenjang_sekolah) filename += `_${exportFilters.jenjang_sekolah}`;
+                if (exportFilters.angkatan) filename += `_${exportFilters.angkatan}`;
+                filename += '.xlsx';
+                
+                saveExcelFile(excelBuffer, filename);
+                
+                showNotification('Excel berhasil di-export!', 'success');
+            } catch (error) {
+                print.error('Error exporting to Excel:', error);
+                showNotification('Gagal mengexport data ke Excel', 'error');
+            }
+        }
+        
+        // Helper function to save Excel file
+        function saveExcelFile(buffer, filename) {
+            const blob = new Blob([buffer], { type: 'application/octet-stream' });
+            
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            
+            // Clean up
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+        // Export to PDF function
+        async function exportToPdf() {
+            if (!currentPesertaId) {
+                showNotification('Data peserta tidak ditemukan', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Mempersiapkan PDF...', 'info');
+                
+                // Initialize jsPDF
+                const doc = new jspdf.jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+                
+                // Set document properties
+                doc.setProperties({
+                    title: 'Data Peserta PPDB',
+                    subject: 'Informasi Siswa',
+                    author: 'PPDB Walisongo',
+                    creator: 'PPDB Walisongo System'
+                });
+                
+                // Add Fonts
+                doc.setFont('helvetica', 'bold');
+                
+                // Add Header
+                doc.setFontSize(18);
+                doc.setTextColor(0, 51, 102);
+                const pesertaName = document.getElementById('detail-nama').textContent;
+                const pesertaNisn = document.getElementById('detail-nisn').textContent;
+                
+                doc.text('DATA PESERTA PPDB', 105, 20, { align: 'center' });
+                doc.setFontSize(14);
+                doc.text(pesertaName, 105, 30, { align: 'center' });
+                doc.setFontSize(10);
+                doc.text(`NISN: ${pesertaNisn}`, 105, 37, { align: 'center' });
+                
+                // Draw a line
+                doc.setDrawColor(0, 102, 204);
+                doc.setLineWidth(0.5);
+                doc.line(20, 40, 190, 40);
+                
+                // Define sections and fields
+                const sections = [
+                    {
+                        title: "DATA PRIBADI",
+                        fields: [
+                            { label: "Nama Lengkap", value: document.getElementById('detail-nama').textContent },
+                            { label: "NISN", value: document.getElementById('detail-nisn').textContent },
+                            { label: "Tempat, Tanggal Lahir", value: document.getElementById('detail-ttl').textContent },
+                            { label: "Jenis Kelamin", value: document.getElementById('detail-gender').textContent },
+                            { label: "Alamat", value: document.getElementById('detail-alamat').textContent },
+                            { label: "No. Telepon", value: document.getElementById('detail-telp').textContent },
+                            { 
+                                label: "Status Verifikasi", 
+                                value: (() => {
+                                    const el = document.getElementById('detail-status');
+                                    return el ? el.options[el.selectedIndex].text : '-';
+                                })()
+                            },
+                            { 
+                                label: "NIS", 
+                                value: document.getElementById('detail-nis-input').value || '-'
+                            }
+                        ]
+                    },
+                    {
+                        title: "INFORMASI PENDIDIKAN",
+                        fields: [
+                            { label: "Jenjang Sekolah", value: document.getElementById('detail-jenjang').textContent },
+                            { label: "Pilihan Kelas", value: document.getElementById('detail-jurusan1').textContent },
+                            { label: "ID User", value: document.getElementById('detail-user-id').textContent }
+                        ]
+                    },
+                    {
+                        title: "DATA ORANG TUA",
+                        fields: [
+                            { label: "Nama Ayah", value: document.getElementById('detail-nama-ayah').textContent },
+                            { label: "Pekerjaan Ayah", value: document.getElementById('detail-pekerjaan-ayah').textContent },
+                            { label: "Nama Ibu", value: document.getElementById('detail-nama-ibu').textContent },
+                            { label: "Pekerjaan Ibu", value: document.getElementById('detail-pekerjaan-ibu').textContent },
+                            { label: "Penghasilan Orang Tua", value: document.getElementById('detail-penghasilan-ortu').textContent }
+                        ]
+                    },
+                    {
+                        title: "INFORMASI TAMBAHAN",
+                        fields: [
+                            { label: "ID Peserta", value: document.getElementById('detail-id').textContent },
+                            { label: "Terdaftar pada", value: document.getElementById('detail-created').textContent },
+                            { label: "Terakhir diupdate", value: document.getElementById('detail-updated').textContent }
+                        ]
+                    }
+                ];
+                
+                // Start position
+                let y = 50;
+                
+                // Define colors and styles
+                const titleColor = [0, 51, 153];
+                const labelColor = [0, 0, 0];
+                const valueColor = [50, 50, 50];
+                
+                // Add sections
+                for (const section of sections) {
+                    // Add section title
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(12);
+                    doc.setTextColor(titleColor[0], titleColor[1], titleColor[2]);
+                    doc.text(section.title, 20, y);
+                    
+                    // Draw a colored line under the title
+                    doc.setDrawColor(0, 102, 204);
+                    doc.setLineWidth(0.2);
+                    doc.line(20, y + 1, 190, y + 1);
+                    
+                    y += 8;
+                    
+                    // Add fields
+                    for (const field of section.fields) {
+                        // Check if we need a new page
+                        if (y > 270) {
+                            doc.addPage();
+                            y = 20;
+                        }
+                        
+                        doc.setFont('helvetica', 'bold');
+                        doc.setFontSize(10);
+                        doc.setTextColor(labelColor[0], labelColor[1], labelColor[2]);
+                        doc.text(`${field.label}:`, 20, y);
+                        
+                        doc.setFont('helvetica', 'normal');
+                        doc.setTextColor(valueColor[0], valueColor[1], valueColor[2]);
+                        
+                        // If value is longer than 80 chars, split into multiple lines
+                        const value = field.value || '-';
+                        if (value.length > 80) {
+                            const lines = doc.splitTextToSize(value, 120);
+                            for (let i = 0; i < lines.length; i++) {
+                                doc.text(lines[i], 70, y + (i * 5));
+                                if (i > 0) y += 5;
+                            }
+                        } else {
+                            doc.text(value, 70, y);
+                        }
+                        
+                        y += 7;
+                    }
+                    
+                    y += 5;
+                }
+                
+                // Add Berkas information
+                const berkasContainer = document.getElementById('berkas-list');
+                if (berkasContainer && !berkasContainer.classList.contains('hidden')) {
+                    // Check if we need a new page
+                    if (y > 250) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    // Title
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(12);
+                    doc.setTextColor(titleColor[0], titleColor[1], titleColor[2]);
+                    doc.text("BERKAS PESERTA", 20, y);
+                    
+                    // Draw a colored line under the title
+                    doc.setDrawColor(0, 102, 204);
+                    doc.setLineWidth(0.2);
+                    doc.line(20, y + 1, 190, y + 1);
+                    
+                    y += 8;
+                    
+                    // List berkas
+                    doc.setFont('helvetica', 'normal');
+                    doc.setFontSize(10);
+                    doc.setTextColor(0, 0, 0);
+                    
+                    const berkasList = Array.from(berkasContainer.querySelectorAll('div'));
+                    for (const item of berkasList) {
+                        const span = item.querySelector('span');
+                        if (span) {
+                            doc.text(`- ${span.textContent}`, 20, y);
+                            y += 6;
+                            
+                            // Check if we need a new page
+                            if (y > 270) {
+                                doc.addPage();
+                                y = 20;
+                            }
+                        }
+                    }
+                }
+                
+                // Add footer
+                const totalPages = doc.getNumberOfPages();
+                for (let i = 1; i <= totalPages; i++) {
+                    doc.setPage(i);
+                    doc.setFont('helvetica', 'italic');
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Dokumen ini dicetak pada ${new Date().toLocaleString()} - Halaman ${i} dari ${totalPages}`, 105, 290, { align: 'center' });
+                }
+                
+                // Save the PDF
+                const filename = `PPDB_${pesertaNisn || 'peserta'}_${pesertaName.replace(/\s+/g, '_')}.pdf`;
+                doc.save(filename);
+                
+                showNotification('PDF berhasil di-export!', 'success');
+            } catch (error) {
+                print.error('Error exporting to PDF:', error);
+                showNotification('Gagal mengexport data ke PDF: ' + error.message, 'error');
+            }
+        }
     </script>
+    
+    <!-- Add SheetJS library for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <!-- Add jsPDF library for direct PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 @endsection

@@ -2,11 +2,14 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::get('/dashboard', function () {
     return view('dashboard');
 })->name('dashboard');
 
 // Media Management Routes
+Route::get('/', function () {
+    return view('media.homepage');
+})->name('homepage');
 Route::get('/homepage', function () {
     return view('media.homepage');
 })->name('homepage');
