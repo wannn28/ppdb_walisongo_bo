@@ -2,36 +2,46 @@
 
 @section('content')
     <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">Detail Peserta PPDB</h1>
-            <div class="flex gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold mb-4 md:mb-0">Detail Peserta PPDB</h1>
+            <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
                 <x-search placeholder="Cari Peserta..." searchFunction="searchPeserta"
-                    additionalClasses="bg-transparent shadow-none p-0" />
-                <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center"
+                    additionalClasses="bg-transparent shadow-none p-0 w-full sm:w-auto" />
+                <button class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center justify-center"
                     onclick="openModal('trashModal')">
                     <i class="fas fa-trash mr-2"></i> Trash
                 </button>
-                {{-- <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="openModal('tambahModal')">
-                <i class="fas fa-plus mr-2"></i> Tambah Peserta
-            </button> --}}
             </div>
         </div>
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <x-sortable-header column="id" label="ID" />
-                        <x-sortable-header column="nisn" label="NISN" />
-                        <x-sortable-header column="nis" label="NIS" />
-                        <x-sortable-header column="nama" label="Nama" />
-                        <x-sortable-header column="tempat_lahir" label="TTL" />
-                        <x-sortable-header column="jenis_kelamin" label="Gender" />
-                        <x-sortable-header column="no_telp" label="Kontak" />
-                        <x-sortable-header column="jenjang_sekolah" label="Jenjang" />
-                        <x-sortable-header column="angkatan" label="Angkatan" />
-                        <x-sortable-header column="status" label="Status" />
-                        <x-sortable-header column="penghasilan_ortu" label="Penghasilan Ortu" />
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <x-sortable-header column="id" label="ID"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="nisn" label="NISN"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="nis" label="NIS"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="nama" label="Nama"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="tempat_lahir" label="TTL"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="jenis_kelamin" label="Gender"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="no_telp" label="Kontak"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="jenjang_sekolah" label="Jenjang"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="angkatan" label="Angkatan"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="status" label="Status"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <x-sortable-header column="penghasilan_ortu" label="Penghasilan Ortu"
+                            additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
+                        <th
+                            class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="pesertaTableBody">
@@ -47,7 +57,7 @@
     <!-- Modal Tambah Peserta -->
     <div id="tambahModal"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
                 <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">Tambah Peserta Baru</h3>
                 <form id="pesertaForm">
@@ -58,7 +68,7 @@
                             required>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="block text-gray-700 text-sm font-bold mb-2">NISN</label>
                             <input type="text" name="nisn"
@@ -90,7 +100,7 @@
     <!-- Modal Detail Peserta -->
     <div id="detailModal"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
-        <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium leading-6 text-gray-900">Detail Peserta PPDB</h3>
                 <button data-close-modal="detailModal" class="text-gray-400 hover:text-gray-500">
@@ -98,7 +108,7 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
                     <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Pribadi</h4>
                     <div class="space-y-3">
@@ -126,18 +136,7 @@
                             <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
                             <p class="mt-1" id="detail-telp">-</p>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">NIS</label>
-                            <div class="mt-1 flex items-center gap-2">
-                                <input type="text" id="detail-nis-input" 
-                                    class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                    placeholder="Masukkan NIS">
-                                <button onclick="updateNisPeserta()"
-                                    class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                                    <i class="fas fa-save"></i> Simpan
-                                </button>
-                            </div>
-                        </div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700">Status</label>
                             <div class="mt-1 flex items-center gap-2">
@@ -149,6 +148,18 @@
                                 </select>
                                 <button onclick="updatePesertaStatus()"
                                     class="px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                    <i class="fas fa-save"></i> Simpan
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">NIS</label>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input type="text" id="detail-nis-input"
+                                    class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                    placeholder="Masukkan NIS">
+                                <button onclick="updateNisPeserta()"
+                                    class="px-3 py-2 bg-green-500 text-white rounded hover:bg-green-600">
                                     <i class="fas fa-save"></i> Simpan
                                 </button>
                             </div>
@@ -167,10 +178,6 @@
                             <label class="block text-sm font-medium text-gray-700">Pilihan Kelas</label>
                             <p class="mt-1" id="detail-jurusan1">-</p>
                         </div>
-                        {{-- <div>
-                        <label class="block text-sm font-medium text-gray-700">Pilihan Jurusan 2</label>
-                        <p class="mt-1" id="detail-jurusan2">-</p>
-                    </div> --}}
                         <div id="detail-user-container" class="border-t border-gray-200 mt-4 pt-4">
                             <label class="block text-sm font-medium text-gray-700">ID User</label>
                             <p class="mt-1" id="detail-user-id">-</p>
@@ -207,7 +214,7 @@
 
             <div class="mt-6">
                 <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Informasi Tambahan</h4>
-                <div class="grid grid-cols-3 gap-4 text-sm text-gray-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
                     <div>
                         <span>Terdaftar pada:</span>
                         <p id="detail-created" class="font-medium">-</p>
@@ -222,7 +229,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="mt-6">
                 <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Berkas Peserta</h4>
                 <div id="berkas-container" class="grid grid-cols-1 gap-4">
@@ -237,7 +244,7 @@
     <!-- Modal Trash Peserta -->
     <div id="trashModal"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
-        <div class="relative top-20 mx-auto p-5 border w-3/4 shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium leading-6 text-gray-900">Peserta Terhapus</h3>
                 <button data-close-modal="trashModal" class="text-gray-400 hover:text-gray-500">
@@ -245,21 +252,31 @@
                 </button>
             </div>
 
-            <div class="bg-white rounded-lg overflow-hidden">
+            <div class="bg-white rounded-lg overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ID
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NISN
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                NISN
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Nama
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Jenjang</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Deleted At</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
                             </th>
                         </tr>
                     </thead>
@@ -269,8 +286,9 @@
                 </table>
 
                 <!-- Pagination for trash -->
-                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                    <div class="flex-1 flex justify-between sm:hidden">
+                <div
+                    class="bg-white px-4 py-3 flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 sm:px-6">
+                    <div class="flex justify-between w-full sm:hidden mb-4">
                         <button id="trash-prev-page"
                             class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             Previous
@@ -280,8 +298,8 @@
                             Next
                         </button>
                     </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
+                    <div class="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <div class="mb-4 sm:mb-0">
                             <p class="text-sm text-gray-700">
                                 Showing
                                 <span class="font-medium" id="trash-pagination-start">0</span>
@@ -420,47 +438,49 @@
 
                 const row = `
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.nisn || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.nis || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.nama}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.id}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nisn || '-'}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nis || '-'}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nama}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     <div>${peserta.tempat_lahir || '-'}</div>
-                    <div class="text-sm text-gray-500">${peserta.tanggal_lahir ? new Date(peserta.tanggal_lahir).toLocaleDateString() : '-'}</div>
+                    <div class="text-xs text-gray-500">${peserta.tanggal_lahir ? new Date(peserta.tanggal_lahir).toLocaleDateString() : '-'}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800">
                         ${peserta.jenis_kelamin || '-'}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     <div>${peserta.no_telp || '-'}</div>
-                    <div class="text-sm text-gray-500">${peserta.biodata_ortu ? 'Data lengkap' : 'Belum lengkap'}</div>
+                    <div class="text-xs text-gray-500">${peserta.biodata_ortu ? 'Data lengkap' : 'Belum lengkap'}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
                         ${peserta.jenjang_sekolah || '-'}
                     </span>
                     ${peserta.jurusan1 ? `<div class="text-xs mt-1">Kelas : ${peserta.jurusan1.jurusan || '-'}</div>` : ''}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     <span class="px-2 py-1 text-xs rounded bg-purple-100 text-purple-800">
                         ${peserta.angkatan || '-'}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     ${statusBadge}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     ${getPenghasilanOrtu(peserta)}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button class="text-blue-600 hover:text-blue-900 mr-3" onclick="viewDetail(${peserta.id})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="text-red-600 hover:text-red-900" onclick="deletePeserta(${peserta.id})">
-                        <i class="fas fa-trash"></i>
-                    </button>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button class="text-blue-600 hover:text-blue-900" onclick="viewDetail(${peserta.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-900" onclick="deletePeserta(${peserta.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;
@@ -664,7 +684,7 @@
                     document.getElementById('detail-gender').textContent = peserta.jenis_kelamin || '-';
                     document.getElementById('detail-alamat').textContent = peserta.alamat || '-';
                     document.getElementById('detail-telp').textContent = peserta.no_telp || '-';
-                    
+
                     // Set current NIS value in the input field
                     document.getElementById('detail-nis-input').value = peserta.nis || '';
 
@@ -750,7 +770,7 @@
                         .created_at).toLocaleString() : '-';
                     document.getElementById('detail-updated').textContent = peserta.updated_at ? new Date(peserta
                         .updated_at).toLocaleString() : '-';
-                    
+
                     // Load berkas for this peserta
                     loadBerkasPeserta(peserta.id);
 
@@ -904,20 +924,21 @@
             pesertas.forEach((peserta) => {
                 const row = `
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.id}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.nisn || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${peserta.nama}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.id}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nisn || '-'}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nama}</td>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
                         ${peserta.jenjang_sekolah || '-'}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     ${peserta.deleted_at ? new Date(peserta.deleted_at).toLocaleString() : '-'}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button class="text-green-600 hover:text-green-900" onclick="restorePeserta(${peserta.id})">
-                        <i class="fas fa-trash-restore"></i> Restore
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                    <button class="text-green-600 hover:text-green-900 flex items-center" onclick="restorePeserta(${peserta.id})">
+                        <i class="fas fa-trash-restore mr-1"></i> 
+                        <span>Restore</span>
                     </button>
                 </td>
             </tr>
@@ -1069,29 +1090,29 @@
             document.getElementById('berkas-loading').classList.remove('hidden');
             document.getElementById('berkas-list').classList.add('hidden');
             document.getElementById('berkas-empty').classList.add('hidden');
-            
+
             try {
                 const response = await AwaitFetchApi(`admin/berkas/peserta/${pesertaId}`, 'GET');
-                
+
                 document.getElementById('berkas-loading').classList.add('hidden');
-                
+
                 if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
                     const berkasList = document.getElementById('berkas-list');
                     berkasList.innerHTML = '';
                     berkasList.classList.remove('hidden');
-                    
+
                     response.data.forEach(berkas => {
                         const berkasItem = document.createElement('div');
                         berkasItem.className = 'p-3 bg-gray-50 rounded-lg flex justify-between items-center';
-                        
+
                         const berkasName = document.createElement('div');
                         berkasName.className = 'flex items-center gap-2';
-                        
+
                         // Determine file icon based on file type/extension
                         const fileUrl = berkas.url_file || '';
                         const fileExt = fileUrl ? fileUrl.split('.').pop().toLowerCase() : '';
                         let fileIcon = 'fa-file';
-                        
+
                         if (['pdf'].includes(fileExt)) {
                             fileIcon = 'fa-file-pdf';
                         } else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExt)) {
@@ -1101,25 +1122,26 @@
                         } else if (['xls', 'xlsx'].includes(fileExt)) {
                             fileIcon = 'fa-file-excel';
                         }
-                        
+
                         berkasName.innerHTML = `
                             <i class="fas ${fileIcon} text-blue-500"></i>
                             <span>${berkas.nama_file || 'Berkas'}</span>
                         `;
-                        
+
                         const berkasActions = document.createElement('div');
                         berkasActions.className = 'flex gap-2';
-                        
+
                         // View button
                         if (berkas.url_file) {
                             const viewBtn = document.createElement('a');
                             viewBtn.href = berkas.url_file;
                             viewBtn.target = '_blank';
-                            viewBtn.className = 'px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm';
+                            viewBtn.className =
+                                'px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm';
                             viewBtn.innerHTML = '<i class="fas fa-eye mr-1"></i> Lihat';
                             berkasActions.appendChild(viewBtn);
                         }
-                        
+
                         berkasItem.appendChild(berkasName);
                         berkasItem.appendChild(berkasActions);
                         berkasList.appendChild(berkasItem);
@@ -1142,7 +1164,7 @@
             }
 
             const nis = document.getElementById('detail-nis-input').value.trim();
-            
+
             if (!nis) {
                 showNotification('NIS tidak boleh kosong', 'error');
                 return;

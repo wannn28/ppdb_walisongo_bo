@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold mb-6">Peringkat Peserta</h1>
         
         <!-- Filter Section -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Jenjang Sekolah Selection -->
             <div>
                 <label for="jenjang_sekolah" class="block text-sm font-medium text-gray-700 mb-2">Pilih Jenjang Sekolah</label>
@@ -27,6 +27,12 @@
                     <option value="">-- Pilih Jurusan --</option>
                 </select>
             </div>
+            
+            <!-- Angkatan Input -->
+            <div>
+                <label for="angkatan" class="block text-sm font-medium text-gray-700 mb-2">Angkatan</label>
+                <input type="number" id="angkatan" placeholder="Masukkan angkatan" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" />
+            </div>
         </div>
 
         <!-- Ranking Table -->
@@ -44,7 +50,7 @@
                             Total
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Wakaf
+                            Jariah
                         </th>
                     </tr>
                 </thead>
@@ -108,6 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentPage = 1;
     let selectedJurusan = null;
     let selectedJenjangSekolah = null;
+    let selectedAngkatan = null;
     let totalPages = 1;
     let totalItems = 0;
 
@@ -144,8 +151,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Fetch rankings
     async function fetchRankings(page = 1) {
-        if (!selectedJurusan || !selectedJenjangSekolah) {
-            showNotification('Silahkan pilih jenjang sekolah dan jurusan terlebih dahulu', 'warning');
+        if (!selectedJurusan || !selectedJenjangSekolah || !selectedAngkatan) {
+            showNotification('Silahkan pilih jenjang sekolah, jurusan, dan angkatan terlebih dahulu', 'warning');
             return;
         }
 
@@ -153,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function() {
         showLoading(true);
         
         try {
-            const result = await AwaitFetchApi(`admin/peringkat?jurusan_id=${selectedJurusan}&jenjang_sekolah=${selectedJenjangSekolah}`, 'GET');
+            const result = await AwaitFetchApi(`admin/peringkat?jurusan_id=${selectedJurusan}&jenjang_sekolah=${selectedJenjangSekolah}&angkatan=${selectedAngkatan}`, 'GET');
             print.log('Ranking result:', result);
             showLoading(false);
             
@@ -167,7 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.peserta ? item.peserta.nama : '-'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${item.total || 0}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${item.peserta && item.peserta.wakaf ? `Wakaf: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.peserta.wakaf)}` : '-'}
+                            ${item.peserta && item.peserta.wakaf ? `Jariah: ${new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.peserta.wakaf)}` : '-'}
                         </td>
                     `;
                     tableBody.appendChild(row);
@@ -243,8 +250,13 @@ document.addEventListener('DOMContentLoaded', function() {
         checkAndFetchRankings();
     });
 
+    document.getElementById('angkatan').addEventListener('input', function(e) {
+        selectedAngkatan = e.target.value;
+        checkAndFetchRankings();
+    });
+
     function checkAndFetchRankings() {
-        if (selectedJurusan && selectedJenjangSekolah) {
+        if (selectedJurusan && selectedJenjangSekolah && selectedAngkatan) {
             currentPage = 1;
             fetchRankings(currentPage);
         }

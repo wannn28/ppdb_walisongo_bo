@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-white rounded-lg shadow-md">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -35,6 +35,10 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Tambahkan pagination component untuk tabel utama -->
+        @component('components.pagination', ['id' => 'main-pagination', 'loadFunction' => 'loadKetentuanBerkas'])
+        @endcomponent
     </div>
 
     <!-- Modal Tambah/Edit Ketentuan Berkas -->
@@ -137,75 +141,44 @@
                 </table>
                 
                 <!-- Pagination for trash -->
-                <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                    <div class="flex-1 flex justify-between sm:hidden">
-                        <button id="trash-prev-page" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Previous
-                        </button>
-                        <button id="trash-next-page" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Next
-                        </button>
-                    </div>
-                    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p class="text-sm text-gray-700">
-                                Showing
-                                <span class="font-medium" id="trash-pagination-start">0</span>
-                                to
-                                <span class="font-medium" id="trash-pagination-end">0</span>
-                                of
-                                <span class="font-medium" id="trash-pagination-total">0</span>
-                                results
-                            </p>
-                        </div>
-                        <div>
-                            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <button id="trash-prev-page" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Previous</span>
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <div id="trash-page-numbers" class="flex"></div>
-                                <button id="trash-next-page" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span class="sr-only">Next</span>
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
+                @component('components.pagination', ['id' => 'trash-pagination', 'loadFunction' => 'loadTrashData'])
+                @endcomponent
             </div>
         </div>
     </div>
 
+    @component('components.table-utils')
+    @endcomponent
+
     <script>
         // Global variables for pagination
-        let trashCurrentPage = 1;
-        let trashTotalPages = 1;
-
+        let currentPage = 1;
+        let totalPages = 1;
+        let perPage = 10;
+        let sortBy = '';
+        let sortDirection = 'asc';
+        
         document.addEventListener('DOMContentLoaded', () => {
             loadKetentuanBerkas();
-            
-            // Setup trash pagination event listeners
-            document.getElementById('trash-prev-page').addEventListener('click', () => {
-                if (trashCurrentPage > 1) {
-                    loadTrashData(trashCurrentPage - 1);
-                }
-            });
-            
-            document.getElementById('trash-next-page').addEventListener('click', () => {
-                if (trashCurrentPage < trashTotalPages) {
-                    loadTrashData(trashCurrentPage + 1);
-                }
-            });
         });
         
         // Fungsi untuk memuat semua ketentuan berkas
-        async function loadKetentuanBerkas() {
+        async function loadKetentuanBerkas(page = 1) {
             try {
-                const response = await AwaitFetchApi('admin/ketentuan-berkas', 'GET');
+                currentPage = page;
+                const params = new URLSearchParams({
+                    page: page,
+                    per_page: perPage,
+                    sort_by: sortBy,
+                    sort_direction: sortDirection
+                });
+                
+                const response = await AwaitFetchApi(`admin/ketentuan-berkas?${params}`, 'GET');
                 if (response.meta?.code === 200) {
-                    // Perbaikan path data yang benar
+                    // Handle the correct data structure with nested ketentuan_berkas
                     renderKetentuanBerkas(response.data || {});
+                    // Update pagination for main table using the utility function
+                    updatePaginationElements(response.pagination, loadKetentuanBerkas);
                 } else {
                     showNotification('Gagal memuat ketentuan berkas: ' + response.meta?.message, 'error');
                 }
@@ -270,7 +243,7 @@
             try {
                 const params = new URLSearchParams({
                     page: page,
-                    per_page: 10
+                    per_page: perPage
                 });
 
                 const response = await AwaitFetchApi(`admin/ketentuan-berkass/trash?${params}`, 'GET');
@@ -323,103 +296,11 @@
                     tableBody.appendChild(row);
                 });
                 
-                // Update pagination
-                updateTrashPagination(response.pagination);
+                // Update pagination using utility function
+                updatePaginationElements(response.pagination, loadTrashData);
             } catch (error) {
                 print.error('Error:', error);
                 showNotification('Terjadi kesalahan saat memuat data ketentuan berkas terhapus', 'error');
-            }
-        }
-        
-        function updateTrashPagination(pagination) {
-            // Default values in case pagination data is missing or malformed
-            let currentPageValue = 1;
-            let totalPagesValue = 1;
-            let totalItemsValue = 0;
-            let perPageValue = 10;
-            
-            // Only update values if pagination data exists and is valid
-            if (pagination && typeof pagination === 'object') {
-                currentPageValue = parseInt(pagination.page) || 1;
-                totalPagesValue = parseInt(pagination.total_pages) || 1;
-                totalItemsValue = parseInt(pagination.total_items) || 0;
-                perPageValue = parseInt(pagination.per_page) || 10;
-                
-                // Update global variables
-                trashCurrentPage = currentPageValue;
-                trashTotalPages = totalPagesValue;
-            }
-            
-            // Calculate start and end values, protecting against NaN
-            const start = totalItemsValue > 0 ? (currentPageValue - 1) * perPageValue + 1 : 0;
-            const end = Math.min(start + perPageValue - 1, totalItemsValue);
-            
-            // Update DOM elements
-            document.getElementById('trash-pagination-start').textContent = start;
-            document.getElementById('trash-pagination-end').textContent = end;
-            document.getElementById('trash-pagination-total').textContent = totalItemsValue;
-            
-            // Update previous and next buttons state
-            document.getElementById('trash-prev-page').disabled = currentPageValue <= 1;
-            document.getElementById('trash-next-page').disabled = currentPageValue >= totalPagesValue;
-            
-            // Generate page numbers
-            const pageNumbers = document.getElementById('trash-page-numbers');
-            pageNumbers.innerHTML = '';
-            
-            // Don't show page numbers if there are no items
-            if (totalItemsValue === 0) {
-                return;
-            }
-            
-            // Determine page range to display
-            const maxPageButtons = 5;
-            let startPage = Math.max(1, currentPageValue - Math.floor(maxPageButtons / 2));
-            let endPage = Math.min(totalPagesValue, startPage + maxPageButtons - 1);
-            
-            if (endPage - startPage + 1 < maxPageButtons) {
-                startPage = Math.max(1, endPage - maxPageButtons + 1);
-            }
-            
-            // Add first page button if not at the beginning
-            if (startPage > 1) {
-                const firstPageBtn = document.createElement('button');
-                firstPageBtn.className = 'px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
-                firstPageBtn.textContent = '1';
-                firstPageBtn.onclick = () => loadTrashData(1);
-                pageNumbers.appendChild(firstPageBtn);
-                
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'px-3 py-1 text-gray-500';
-                    ellipsis.textContent = '...';
-                    pageNumbers.appendChild(ellipsis);
-                }
-            }
-            
-            // Add page number buttons
-            for (let i = startPage; i <= endPage; i++) {
-                const pageBtn = document.createElement('button');
-                pageBtn.className = `px-3 py-1 rounded border ${currentPageValue === i ? 'bg-blue-500 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`;
-                pageBtn.textContent = i;
-                pageBtn.onclick = () => loadTrashData(i);
-                pageNumbers.appendChild(pageBtn);
-            }
-            
-            // Add last page button if not at the end
-            if (endPage < totalPagesValue) {
-                if (endPage < totalPagesValue - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.className = 'px-3 py-1 text-gray-500';
-                    ellipsis.textContent = '...';
-                    pageNumbers.appendChild(ellipsis);
-                }
-                
-                const lastPageBtn = document.createElement('button');
-                lastPageBtn.className = 'px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
-                lastPageBtn.textContent = totalPagesValue;
-                lastPageBtn.onclick = () => loadTrashData(totalPagesValue);
-                pageNumbers.appendChild(lastPageBtn);
             }
         }
 
@@ -507,7 +388,7 @@
                 
                 if (response.meta?.code === 200) {
                     showNotification(response.meta.message || 'Ketentuan berkas berhasil dipulihkan', 'success');
-                    loadTrashData(trashCurrentPage);
+                    loadTrashData(currentPage);
                     loadKetentuanBerkas();
                 } else {
                     showNotification(response.meta?.message || 'Gagal memulihkan ketentuan berkas', 'error');
