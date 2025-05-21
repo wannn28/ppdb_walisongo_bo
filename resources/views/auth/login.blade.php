@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await AwaitFetchApi('auth/login-admin', 'POST', { no_telp, password }, true);
             if (response && response.meta?.code === 200) {
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('jenjang_sekolah', response.data.jenjang_sekolah);
                 window.location.href = '/';
             }
         } catch (error) {

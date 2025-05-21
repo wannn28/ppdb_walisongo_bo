@@ -389,10 +389,11 @@
         let allPeserta = [];
         let trashCurrentPage = 1;
         let trashTotalPages = 1;
+        let jenjang_sekolah = localStorage.getItem('jenjang_sekolah');
         let filters = {
             search: '',
             status: '',
-            jenjang_sekolah: '',
+            jenjang_sekolah: jenjang_sekolah,
             angkatan: '',
             start_date: '',
             end_date: ''
@@ -439,7 +440,7 @@
             filters = {
                 search: '',
                 status: '',
-                jenjang_sekolah: '',
+                jenjang_sekolah: jenjang_sekolah,
                 angkatan: '',
                 start_date: '',
                 end_date: ''

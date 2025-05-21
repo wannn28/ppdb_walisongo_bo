@@ -16,7 +16,28 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md">
+        <!-- Filter Controls -->
+        <x-filter resetFunction="resetFilters">
+            <x-filter-text 
+                id="searchInput" 
+                label="Cari Berkas" 
+                placeholder="Cari nama berkas..." 
+                onChangeFunction="updateSearchFilter" />
+            
+            <x-filter-select 
+                id="jenjangFilter" 
+                label="Jenjang Sekolah" 
+                :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP 1'=>'SMP 1', 'SMP 2'=>'SMP 2', 'SMA'=>'SMA', 'SMK'=>'SMK']" 
+                onChangeFunction="updateJenjangFilter" />
+            
+            <x-filter-select 
+                id="requiredFilter" 
+                label="Required" 
+                :options="[''=>'Semua', '1'=>'Ya', '0'=>'Tidak']" 
+                onChangeFunction="updateRequiredFilter" />
+        </x-filter>
+
+        <div class="bg-white rounded-lg shadow-md mt-6">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -157,6 +178,47 @@
         let perPage = 10;
         let sortBy = '';
         let sortDirection = 'asc';
+        let jenjang_sekolah = localStorage.getItem('jenjang_sekolah');
+        let filters = {
+            search: '',
+            jenjang_sekolah: jenjang_sekolah,
+            is_required: ''
+        };
+        // Filter functions
+        function updateSearchFilter(value) {
+            filters.search = value;
+            currentPage = 1; // Reset to first page when filtering
+            loadKetentuanBerkas();
+        }
+        
+        function updateJenjangFilter(value) {
+            filters.jenjang_sekolah = value;
+            currentPage = 1;
+            loadKetentuanBerkas();
+        }
+        
+        function updateRequiredFilter(value) {
+            // Convert to numeric value for is_required if needed
+            filters.is_required = value;
+            currentPage = 1;
+            loadKetentuanBerkas();
+        }
+        
+        function resetFilters() {
+            filters = {
+                search: '',
+                jenjang_sekolah: jenjang_sekolah,
+                is_required: ''
+            };
+            
+            // Reset form inputs
+            document.getElementById('searchInput').value = '';
+            document.getElementById('jenjangFilter').value = '';
+            document.getElementById('requiredFilter').value = '';
+            
+            currentPage = 1;
+            loadKetentuanBerkas();
+        }
         
         document.addEventListener('DOMContentLoaded', () => {
             loadKetentuanBerkas();
@@ -173,7 +235,27 @@
                     sort_direction: sortDirection
                 });
                 
-                const response = await AwaitFetchApi(`admin/ketentuan-berkas?${params}`, 'GET');
+                // Add filters to params if they have values
+                if (filters.search) params.append('search', filters.search);
+                if (filters.jenjang_sekolah) params.append('jenjang_sekolah', filters.jenjang_sekolah);
+                if (filters.is_required !== undefined && filters.is_required !== '') {
+                    params.append('is_required', filters.is_required);
+                }
+                
+                // Debug: Log the params being sent
+                print.log('Filter params:', { 
+                    search: filters.search,
+                    jenjang_sekolah: filters.jenjang_sekolah,
+                    is_required: filters.is_required 
+                });
+                
+                const requestUrl = `admin/ketentuan-berkas?${params}`;
+                print.log('Request URL:', requestUrl);
+                
+                const response = await AwaitFetchApi(requestUrl, 'GET');
+                
+                print.log('API Response:', response);
+                
                 if (response.meta?.code === 200) {
                     // Handle the correct data structure with nested ketentuan_berkas
                     renderKetentuanBerkas(response.data || {});

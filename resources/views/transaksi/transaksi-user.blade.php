@@ -23,6 +23,32 @@
             :options="[''=>'All Status', 'pending'=>'Pending', 'success'=>'Success', 'failed'=>'Failed']" 
             onChangeFunction="updateStatusFilter" />
         
+        <x-filter-select 
+            id="methodFilter" 
+            label="Metode Pembayaran" 
+            :options="[''=>'Semua Metode','qris'=>'QRIS', 'va'=>'Virtual Account']" 
+            onChangeFunction="updateMethodFilter" />
+            
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Total Pembayaran</label>
+            <div class="flex gap-2 mt-1">
+                <input 
+                    type="number" 
+                    id="totalMinInput" 
+                    placeholder="Min" 
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    oninput="updateTotalMinFilter(this.value)"
+                >
+                <input 
+                    type="number" 
+                    id="totalMaxInput" 
+                    placeholder="Max" 
+                    class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    oninput="updateTotalMaxFilter(this.value)"
+                >
+            </div>
+        </div>
+        
         <x-filter-date-range 
             startId="startDate" 
             endId="endDate" 
@@ -213,6 +239,9 @@
     let filters = {
         search: '',
         status: '',
+        method: '',
+        total_min: '',
+        total_max: '',
         start_date: '',
         end_date: ''
     };
@@ -250,6 +279,21 @@
         loadTransaksi();
     }
     
+    function updateMethodFilter(value) {
+        filters.method = value;
+        loadTransaksi();
+    }
+    
+    function updateTotalMinFilter(value) {
+        filters.total_min = value;
+        loadTransaksi();
+    }
+    
+    function updateTotalMaxFilter(value) {
+        filters.total_max = value;
+        loadTransaksi();
+    }
+    
     function updateStartDateFilter(value) {
         filters.start_date = value;
         loadTransaksi();
@@ -264,11 +308,17 @@
         filters = {
             search: '',
             status: '',
+            method: '',
+            total_min: '',
+            total_max: '',
             start_date: '',
             end_date: ''
         };
         document.getElementById('searchInput').value = '';
         document.getElementById('statusFilter').value = '';
+        document.getElementById('methodFilter').value = '';
+        document.getElementById('totalMinInput').value = '';
+        document.getElementById('totalMaxInput').value = '';
         document.getElementById('startDate').value = '';
         document.getElementById('endDate').value = '';
         loadTransaksi();
