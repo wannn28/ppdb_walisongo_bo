@@ -64,7 +64,7 @@
             </button>
         </div>
         
-        <div class="bg-white rounded-lg overflow-hidden">
+        <div class="bg-white rounded-lg overflow-x-auto w-full">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>

@@ -28,7 +28,7 @@
     </div>
     
     <!-- Biaya Pendaftaran Tab -->
-    <div id="biayaPendaftaran" class="tab-content bg-white rounded-lg shadow-md overflow-hidden">
+    <div id="biayaPendaftaran" class="tab-content bg-white rounded-lg shadow-md overflow-x-auto w-full">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
@@ -45,7 +45,7 @@
     </div>
     
     <!-- Pengajuan Biaya Tab -->
-    <div id="pengajuanBiaya" class="tab-content bg-white rounded-lg shadow-md overflow-hidden hidden">
+    <div id="pengajuanBiaya" class="tab-content bg-white rounded-lg shadow-md overflow-x-auto w-full hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>

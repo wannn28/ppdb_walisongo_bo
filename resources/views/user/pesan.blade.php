@@ -16,7 +16,7 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="bg-white rounded-lg shadow-md overflow-x-auto w-full">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -137,7 +137,7 @@
                 </button>
             </div>
             
-            <div class="bg-white rounded-lg overflow-hidden">
+            <div class="bg-white rounded-lg overflow-x-auto w-full">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
