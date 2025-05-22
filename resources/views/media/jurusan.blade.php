@@ -14,6 +14,21 @@
         </div>
     </div>
     
+    <!-- Filter Controls -->
+    <x-filter resetFunction="resetFilters">
+        <x-filter-text 
+            id="searchInput" 
+            label="Cari Kelas" 
+            placeholder="Cari nama kelas..." 
+            onChangeFunction="updateSearchFilter" />
+        
+        <x-filter-select 
+            id="jenjangFilter" 
+            label="Jenjang Sekolah" 
+            :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP 1'=>'SMP 1', 'SMP 2'=>'SMP 2', 'SMA'=>'SMA', 'SMK'=>'SMK']" 
+            onChangeFunction="updateJenjangFilter" />
+    </x-filter>
+    
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -28,6 +43,9 @@
                 <!-- Data will be populated by JavaScript -->
             </tbody>
         </table>
+        
+        <!-- Add pagination component -->
+        <x-pagination loadFunction="loadJurusan" />
     </div>
 </div>
 
@@ -100,7 +118,48 @@
 
 @push('scripts')
 <script>
+    // Global variables for filters and pagination
+    let currentPage = 1;
+    let totalPages = 1;
+    let perPage = 10;
+    let sortBy = '';
+    let sortDirection = 'asc';
+    let jenjang_sekolah = localStorage.getItem('jenjang_sekolah');
+    let filters = {
+        search: '',
+        jenjang_sekolah: jenjang_sekolah
+    };
+
+    // Filter functions
+    function updateSearchFilter(value) {
+        filters.search = value;
+        currentPage = 1; // Reset to first page when filtering
+        loadJurusan();
+    }
+    
+    function updateJenjangFilter(value) {
+        document.getElementById('jenjangFilter').value = value;
+        filters.jenjang_sekolah = value;
+        currentPage = 1;
+        loadJurusan();
+    }
+    
+    function resetFilters() {
+        filters = {
+            search: '',
+            jenjang_sekolah: jenjang_sekolah
+        };
+        
+        // Reset form inputs
+        document.getElementById('searchInput').value = '';
+        document.getElementById('jenjangFilter').value = jenjang_sekolah || '';
+        
+        currentPage = 1;
+        loadJurusan();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+        updateJenjangFilter(jenjang_sekolah || '');
         loadJurusan();
         
         // Event listeners for modals
@@ -122,16 +181,31 @@
         // Form submission
         document.getElementById('jurusanForm').addEventListener('submit', handleFormSubmit);
     });
-    
-    async function loadJurusan() {
+
+    async function loadJurusan(page = 1) {
         try {
-            const response = await AwaitFetchApi('admin/jurusan', 'GET');
+            currentPage = page;
+            const params = new URLSearchParams({
+                page: page,
+                per_page: perPage
+            });
+            
+            // Add filters to params if they have values
+            if (filters.search) params.append('search', filters.search);
+            if (filters.jenjang_sekolah) params.append('jenjang_sekolah', filters.jenjang_sekolah);
+            
+            if (sortBy) {
+                params.append('sort_by', sortBy);
+                params.append('sort_direction', sortDirection);
+            }
+            
+            const response = await AwaitFetchApi(`admin/jurusan?${params.toString()}`, 'GET');
             print.log('API Response - Kelas:', response);
             
             const tableBody = document.getElementById('jurusanTableBody');
             tableBody.innerHTML = '';
             
-            if (!response.data || response.data.length === 0) {
+            if (!response.data || !response.data || response.data.length === 0) {
                 const emptyRow = document.createElement('tr');
                 emptyRow.innerHTML = `
                     <td colspan="4" class="px-6 py-4 text-center text-gray-500">
@@ -142,8 +216,8 @@
                 return;
             }
             
-            // Check if data is in response.data or response.data.data based on API structure
-            const jurusanList = Array.isArray(response.data) ? response.data : (response.data.data || []);
+            // Use the jurusan array from the response
+            const jurusanList = response.data || [];
             
             jurusanList.forEach((jurusan, index) => {
                 const row = document.createElement('tr');
@@ -166,9 +240,103 @@
                 `;
                 tableBody.appendChild(row);
             });
+            
+            // Update pagination if present in response
+            if (response.pagination) {
+                updatePagination(response.pagination);
+            }
         } catch (error) {
             print.error('Error:', error);
             showNotification('Terjadi kesalahan saat memuat data kelas', 'error');
+        }
+    }
+    
+    // Function to update pagination based on the pagination data from API
+    function updatePagination(pagination) {
+        if (!pagination) return;
+        
+        // Default values in case pagination data is missing or malformed
+        let currentPageValue = parseInt(pagination.page) || 1;
+        let totalPagesValue = parseInt(pagination.total_pages) || 1;
+        let totalItemsValue = parseInt(pagination.total_items) || 0;
+        let perPageValue = parseInt(pagination.per_page) || 10;
+        
+        // Update global variables
+        currentPage = currentPageValue;
+        totalPages = totalPagesValue;
+        perPage = perPageValue;
+        
+        // Calculate start and end values
+        const start = totalItemsValue > 0 ? (currentPageValue - 1) * perPageValue + 1 : 0;
+        const end = Math.min(start + perPageValue - 1, totalItemsValue);
+        
+        // Update DOM elements
+        document.getElementById('pagination-start').textContent = start;
+        document.getElementById('pagination-end').textContent = end;
+        document.getElementById('pagination-total').textContent = totalItemsValue;
+        
+        // Update previous and next buttons state
+        document.getElementById('prev-page').disabled = currentPageValue <= 1;
+        document.getElementById('next-page').disabled = currentPageValue >= totalPagesValue;
+        
+        // Generate page numbers
+        const pageNumbers = document.getElementById('page-numbers');
+        pageNumbers.innerHTML = '';
+        
+        // Don't show page numbers if there are no items
+        if (totalItemsValue === 0) {
+            return;
+        }
+        
+        // Determine page range to display
+        const maxPageButtons = 5;
+        let startPage = Math.max(1, currentPageValue - Math.floor(maxPageButtons / 2));
+        let endPage = Math.min(totalPagesValue, startPage + maxPageButtons - 1);
+        
+        if (endPage - startPage + 1 < maxPageButtons) {
+            startPage = Math.max(1, endPage - maxPageButtons + 1);
+        }
+        
+        // Add first page button if not at the beginning
+        if (startPage > 1) {
+            const firstPageBtn = document.createElement('button');
+            firstPageBtn.className = 'px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+            firstPageBtn.textContent = '1';
+            firstPageBtn.onclick = () => loadJurusan(1);
+            pageNumbers.appendChild(firstPageBtn);
+            
+            if (startPage > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'px-3 py-1 text-gray-500';
+                ellipsis.textContent = '...';
+                pageNumbers.appendChild(ellipsis);
+            }
+        }
+        
+        // Add page number buttons
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className =
+                `px-3 py-1 rounded border ${currentPageValue === i ? 'bg-blue-500 text-white' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`;
+            pageBtn.textContent = i;
+            pageBtn.onclick = () => loadJurusan(i);
+            pageNumbers.appendChild(pageBtn);
+        }
+        
+        // Add last page button if not at the end
+        if (endPage < totalPagesValue) {
+            if (endPage < totalPagesValue - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.className = 'px-3 py-1 text-gray-500';
+                ellipsis.textContent = '...';
+                pageNumbers.appendChild(ellipsis);
+            }
+            
+            const lastPageBtn = document.createElement('button');
+            lastPageBtn.className = 'px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-50';
+            lastPageBtn.textContent = totalPagesValue;
+            lastPageBtn.onclick = () => loadJurusan(totalPagesValue);
+            pageNumbers.appendChild(lastPageBtn);
         }
     }
     
@@ -322,6 +490,14 @@
     // Helper function to capitalize each word
     function capitalizeWords(str) {
         return str.replace(/\b\w/g, char => char.toUpperCase());
+    }
+    
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.remove('hidden');
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.add('hidden');
     }
 </script>
 @endpush 

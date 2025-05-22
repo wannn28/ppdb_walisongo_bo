@@ -184,19 +184,19 @@
             jenjang_sekolah: jenjang_sekolah,
             is_required: ''
         };
+        let filterawal = localStorage.getItem('jenjang_sekolah') || 'Semua Jenjang';
         // Filter functions
         function updateSearchFilter(value) {
             filters.search = value;
             currentPage = 1; // Reset to first page when filtering
             loadKetentuanBerkas();
         }
-        
         function updateJenjangFilter(value) {
+            document.getElementById('jenjangFilter').value = value;
             filters.jenjang_sekolah = value;
             currentPage = 1;
             loadKetentuanBerkas();
         }
-        
         function updateRequiredFilter(value) {
             // Convert to numeric value for is_required if needed
             filters.is_required = value;
@@ -213,7 +213,7 @@
             
             // Reset form inputs
             document.getElementById('searchInput').value = '';
-            document.getElementById('jenjangFilter').value = '';
+            document.getElementById('jenjangFilter').value =jenjang_sekolah || '';
             document.getElementById('requiredFilter').value = '';
             
             currentPage = 1;
@@ -221,6 +221,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', () => {
+            updateJenjangFilter(jenjang_sekolah || 'Semua Jenjang') 
             loadKetentuanBerkas();
         });
         
@@ -275,7 +276,7 @@
             tbody.innerHTML = '';
 
             // Pastikan mengambil dari property yang benar
-            const ketentuanBerkas = data.ketentuan_berkas || [];
+            const ketentuanBerkas = data || [];
 
             if (!ketentuanBerkas.length) {
                 tbody.innerHTML = `
@@ -334,7 +335,7 @@
                 const tableBody = document.getElementById('trashTableBody');
                 tableBody.innerHTML = '';
                 
-                if (!response.data || !response.data.ketentuan_berkas || response.data.ketentuan_berkas.length === 0) {
+                if (!response.data || !response.data || response.data.length === 0) {
                     tableBody.innerHTML = `
                         <tr>
                             <td colspan="6" class="px-6 py-4 text-center text-gray-500">
@@ -346,7 +347,7 @@
                 }
                 
                 // Render trash data
-                const ketentuanBerkas = response.data.ketentuan_berkas || [];
+                const ketentuanBerkas = response.data || [];
                 
                 ketentuanBerkas.forEach(item => {
                     const jenjang = item.jenjang_sekolah.toUpperCase().trim();

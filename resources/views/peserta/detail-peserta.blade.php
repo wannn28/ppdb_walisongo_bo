@@ -33,7 +33,7 @@
             <x-filter-select 
                 id="jenjangFilter" 
                 label="Jenjang" 
-                :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP'=>'SMP', 'SMA'=>'SMA']" 
+                :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP'=>'SMP', 'SMA'=>'SMA', 'SMP 1'=>'SMP 1', 'SMP 2'=>'SMP 2']" 
                 onChangeFunction="updateJenjangFilter" />
                 
             <x-filter-select 
@@ -54,6 +54,9 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th
+                            class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi</th>
                         <x-sortable-header column="id" label="ID"
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
                         <x-sortable-header column="nisn" label="NISN"
@@ -76,9 +79,6 @@
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
                         <x-sortable-header column="penghasilan_ortu" label="Penghasilan Ortu"
                             additionalClasses="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm" />
-                        <th
-                            class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200" id="pesertaTableBody">
@@ -302,6 +302,10 @@
                         <tr>
                             <th
                                 class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi
+                            </th>
+                            <th
+                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 ID
                             </th>
                             <th
@@ -318,10 +322,6 @@
                             <th
                                 class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Deleted At</th>
-                            <th
-                                class="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Aksi
-                            </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200" id="trashTableBody">
@@ -376,6 +376,130 @@
         </div>
     </div>
 
+    <!-- Modal Edit Peserta -->
+    <div id="editModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full modal-container">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">Edit Data Peserta</h3>
+                <button data-close-modal="editModal" class="text-gray-400 hover:text-gray-500">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="editPesertaForm" class="space-y-6">
+                <input type="hidden" id="edit-id">
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Data Pribadi -->
+                    <div>
+                        <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Pribadi</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NISN</label>
+                                <input type="text" id="edit-nisn" name="nisn" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">NIS</label>
+                                <input type="text" id="edit-nis" name="nis" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                                <input type="text" id="edit-nama" name="nama" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tempat Lahir</label>
+                                <input type="text" id="edit-tempat-lahir" name="tempat_lahir" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                                <input type="date" id="edit-tanggal-lahir" name="tanggal_lahir" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                                <select id="edit-jenis-kelamin" name="jenis_kelamin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Alamat</label>
+                                <textarea id="edit-alamat" name="alamat" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
+                                <input type="text" id="edit-no-telp" name="no_telp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Informasi Pendidikan -->
+                    <div>
+                        <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Informasi Pendidikan</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Jenjang Sekolah</label>
+                                <select id="edit-jenjang" name="jenjang_sekolah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="SD">SD</option>
+                                    <option value="SMP">SMP</option>
+                                    <option value="SMA">SMA</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Angkatan</label>
+                                <input type="text" id="edit-angkatan" name="angkatan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Status</label>
+                                <select id="edit-status" name="status" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="Diproses">Diproses</option>
+                                    <option value="Diterima">Diterima</option>
+                                    <option value="Ditolak">Ditolak</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Orang Tua -->
+                    <div>
+                        <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Data Orang Tua</h4>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Ayah</label>
+                                <input type="text" id="edit-nama-ayah" name="nama_ayah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
+                                <input type="text" id="edit-pekerjaan-ayah" name="pekerjaan_ayah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
+                                <input type="text" id="edit-nama-ibu" name="nama_ibu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
+                                <input type="text" id="edit-pekerjaan-ibu" name="pekerjaan_ibu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
+                                <input type="text" id="edit-penghasilan-ortu" name="penghasilan_ortu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" data-close-modal="editModal" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <x-table-utils />
 
     <script>
@@ -413,11 +537,12 @@
         }
         
         function updateJenjangFilter(value) {
+            document.getElementById('jenjangFilter').value = value;
             filters.jenjang_sekolah = value;
             currentPage = 1;
             loadPesertaData();
         }
-        
+       
         function updateAngkatanFilter(value) {
             filters.angkatan = value;
             currentPage = 1;
@@ -449,7 +574,7 @@
             // Reset form inputs
             document.getElementById('searchInput').value = '';
             document.getElementById('statusFilter').value = '';
-            document.getElementById('jenjangFilter').value = '';
+            document.getElementById('jenjangFilter').value = jenjang_sekolah || '';
             document.getElementById('angkatanFilter').value = '';
             document.getElementById('startDate').value = '';
             document.getElementById('endDate').value = '';
@@ -459,6 +584,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            updateJenjangFilter(jenjang_sekolah || 'Semua Jenjang') 
             loadPesertaData();
 
             // Setup pagination event listeners
@@ -558,6 +684,19 @@
 
                 const row = `
             <tr>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button class="text-blue-600 hover:text-blue-900" onclick="viewDetail(${peserta.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="text-yellow-600 hover:text-yellow-900" onclick="editPeserta(${peserta.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="text-red-600 hover:text-red-900" onclick="deletePeserta(${peserta.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.id}</td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nisn || '-'}</td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nis || '-'}</td>
@@ -591,16 +730,6 @@
                 </td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     ${getPenghasilanOrtu(peserta)}
-                </td>
-                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <button class="text-blue-600 hover:text-blue-900" onclick="viewDetail(${peserta.id})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="text-red-600 hover:text-red-900" onclick="deletePeserta(${peserta.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
                 </td>
             </tr>
         `;
@@ -1038,6 +1167,12 @@
             pesertas.forEach((peserta) => {
                 const row = `
             <tr>
+                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                    <button class="text-green-600 hover:text-green-900 flex items-center" onclick="restorePeserta(${peserta.id})">
+                        <i class="fas fa-trash-restore mr-1"></i> 
+                        <span>Restore</span>
+                    </button>
+                </td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.id}</td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nisn || '-'}</td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">${peserta.nama}</td>
@@ -1048,12 +1183,6 @@
                 </td>
                 <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                     ${peserta.deleted_at ? new Date(peserta.deleted_at).toLocaleString() : '-'}
-                </td>
-                <td class="px-2 sm:px-4 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
-                    <button class="text-green-600 hover:text-green-900 flex items-center" onclick="restorePeserta(${peserta.id})">
-                        <i class="fas fa-trash-restore mr-1"></i> 
-                        <span>Restore</span>
-                    </button>
                 </td>
             </tr>
         `;
@@ -1444,8 +1573,14 @@
             try {
                 showNotification('Mempersiapkan PDF...', 'info');
                 
-                // Initialize jsPDF
-                const doc = new jspdf.jsPDF({
+                // Make sure jspdf is properly loaded
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    throw new Error('Library jsPDF tidak tersedia');
+                }
+                
+                // Initialize jsPDF with proper namespace
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
                     orientation: 'portrait',
                     unit: 'mm',
                     format: 'a4'
@@ -1465,8 +1600,8 @@
                 // Add Header
                 doc.setFontSize(18);
                 doc.setTextColor(0, 51, 102);
-                const pesertaName = document.getElementById('detail-nama').textContent;
-                const pesertaNisn = document.getElementById('detail-nisn').textContent;
+                const pesertaName = document.getElementById('detail-nama').textContent || 'Nama Peserta';
+                const pesertaNisn = document.getElementById('detail-nisn').textContent || 'NISN';
                 
                 doc.text('DATA PESERTA PPDB', 105, 20, { align: 'center' });
                 doc.setFontSize(14);
@@ -1479,54 +1614,66 @@
                 doc.setLineWidth(0.5);
                 doc.line(20, 40, 190, 40);
                 
+                // Helper function to safely get element text content
+                const getElementText = (id) => {
+                    const element = document.getElementById(id);
+                    return element ? element.textContent || '-' : '-';
+                };
+                
+                // Helper function to safely get element value
+                const getElementValue = (id) => {
+                    const element = document.getElementById(id);
+                    return element ? element.value || '-' : '-';
+                };
+                
                 // Define sections and fields
                 const sections = [
                     {
                         title: "DATA PRIBADI",
                         fields: [
-                            { label: "Nama Lengkap", value: document.getElementById('detail-nama').textContent },
-                            { label: "NISN", value: document.getElementById('detail-nisn').textContent },
-                            { label: "Tempat, Tanggal Lahir", value: document.getElementById('detail-ttl').textContent },
-                            { label: "Jenis Kelamin", value: document.getElementById('detail-gender').textContent },
-                            { label: "Alamat", value: document.getElementById('detail-alamat').textContent },
-                            { label: "No. Telepon", value: document.getElementById('detail-telp').textContent },
+                            { label: "Nama Lengkap", value: getElementText('detail-nama') },
+                            { label: "NISN", value: getElementText('detail-nisn') },
+                            { label: "Tempat, Tanggal Lahir", value: getElementText('detail-ttl') },
+                            { label: "Jenis Kelamin", value: getElementText('detail-gender') },
+                            { label: "Alamat", value: getElementText('detail-alamat') },
+                            { label: "No. Telepon", value: getElementText('detail-telp') },
                             { 
                                 label: "Status Verifikasi", 
                                 value: (() => {
                                     const el = document.getElementById('detail-status');
-                                    return el ? el.options[el.selectedIndex].text : '-';
+                                    return el && el.selectedIndex >= 0 ? el.options[el.selectedIndex].text : '-';
                                 })()
                             },
                             { 
                                 label: "NIS", 
-                                value: document.getElementById('detail-nis-input').value || '-'
+                                value: getElementValue('detail-nis-input')
                             }
                         ]
                     },
                     {
                         title: "INFORMASI PENDIDIKAN",
                         fields: [
-                            { label: "Jenjang Sekolah", value: document.getElementById('detail-jenjang').textContent },
-                            { label: "Pilihan Kelas", value: document.getElementById('detail-jurusan1').textContent },
-                            { label: "ID User", value: document.getElementById('detail-user-id').textContent }
+                            { label: "Jenjang Sekolah", value: getElementText('detail-jenjang') },
+                            { label: "Pilihan Kelas", value: getElementText('detail-jurusan1') },
+                            { label: "ID User", value: getElementText('detail-user-id') }
                         ]
                     },
                     {
                         title: "DATA ORANG TUA",
                         fields: [
-                            { label: "Nama Ayah", value: document.getElementById('detail-nama-ayah').textContent },
-                            { label: "Pekerjaan Ayah", value: document.getElementById('detail-pekerjaan-ayah').textContent },
-                            { label: "Nama Ibu", value: document.getElementById('detail-nama-ibu').textContent },
-                            { label: "Pekerjaan Ibu", value: document.getElementById('detail-pekerjaan-ibu').textContent },
-                            { label: "Penghasilan Orang Tua", value: document.getElementById('detail-penghasilan-ortu').textContent }
+                            { label: "Nama Ayah", value: getElementText('detail-nama-ayah') },
+                            { label: "Pekerjaan Ayah", value: getElementText('detail-pekerjaan-ayah') },
+                            { label: "Nama Ibu", value: getElementText('detail-nama-ibu') },
+                            { label: "Pekerjaan Ibu", value: getElementText('detail-pekerjaan-ibu') },
+                            { label: "Penghasilan Orang Tua", value: getElementText('detail-penghasilan-ortu') }
                         ]
                     },
                     {
                         title: "INFORMASI TAMBAHAN",
                         fields: [
-                            { label: "ID Peserta", value: document.getElementById('detail-id').textContent },
-                            { label: "Terdaftar pada", value: document.getElementById('detail-created').textContent },
-                            { label: "Terakhir diupdate", value: document.getElementById('detail-updated').textContent }
+                            { label: "ID Peserta", value: getElementText('detail-id') },
+                            { label: "Terdaftar pada", value: getElementText('detail-created') },
+                            { label: "Terakhir diupdate", value: getElementText('detail-updated') }
                         ]
                     }
                 ];
@@ -1619,7 +1766,7 @@
                     for (const item of berkasList) {
                         const span = item.querySelector('span');
                         if (span) {
-                            doc.text(`- ${span.textContent}`, 20, y);
+                            doc.text(`- ${span.textContent || 'Berkas'}`, 20, y);
                             y += 6;
                             
                             // Check if we need a new page
@@ -1642,15 +1789,139 @@
                 }
                 
                 // Save the PDF
-                const filename = `PPDB_${pesertaNisn || 'peserta'}_${pesertaName.replace(/\s+/g, '_')}.pdf`;
+                const filename = `PPDB_${pesertaNisn.replace(/[^a-zA-Z0-9]/g, '') || 'peserta'}_${pesertaName.replace(/\s+/g, '_')}.pdf`;
                 doc.save(filename);
                 
                 showNotification('PDF berhasil di-export!', 'success');
             } catch (error) {
-                print.error('Error exporting to PDF:', error);
+                console.error('Error exporting to PDF:', error);
                 showNotification('Gagal mengexport data ke PDF: ' + error.message, 'error');
             }
         }
+
+        async function editPeserta(id) {
+            try {
+                const response = await AwaitFetchApi(`admin/peserta/${id}`, 'GET');
+                if (response?.data) {
+                    const peserta = response.data;
+                    
+                    // Set form ID
+                    document.getElementById('edit-id').value = peserta.id;
+                    
+                    // Fill basic data
+                    document.getElementById('edit-nisn').value = peserta.nisn || '';
+                    document.getElementById('edit-nis').value = peserta.nis || '';
+                    document.getElementById('edit-nama').value = peserta.nama || '';
+                    document.getElementById('edit-tempat-lahir').value = peserta.tempat_lahir || '';
+                    document.getElementById('edit-tanggal-lahir').value = peserta.tanggal_lahir ? new Date(peserta.tanggal_lahir).toISOString().split('T')[0] : '';
+                    document.getElementById('edit-jenis-kelamin').value = peserta.jenis_kelamin || 'L';
+                    document.getElementById('edit-alamat').value = peserta.alamat || '';
+                    document.getElementById('edit-no-telp').value = peserta.no_telp || '';
+                    
+                    // Fill education data
+                    document.getElementById('edit-jenjang').value = peserta.jenjang_sekolah || '';
+                    document.getElementById('edit-angkatan').value = peserta.angkatan || '';
+                    document.getElementById('edit-status').value = peserta.status || '';
+                    
+                    // Fill parent data if available
+                    if (peserta.biodata_ortu) {
+                        document.getElementById('edit-nama-ayah').value = peserta.biodata_ortu.nama_ayah || '';
+                        document.getElementById('edit-nama-ibu').value = peserta.biodata_ortu.nama_ibu || '';
+                        
+                        // Handle pekerjaan_ayah (could be object with nested properties)
+                        if (peserta.biodata_ortu.pekerjaan_ayah) {
+                            if (typeof peserta.biodata_ortu.pekerjaan_ayah === 'object') {
+                                document.getElementById('edit-pekerjaan-ayah').value = peserta.biodata_ortu.pekerjaan_ayah.pekerjaan || '';
+                            } else {
+                                document.getElementById('edit-pekerjaan-ayah').value = peserta.biodata_ortu.pekerjaan_ayah || '';
+                            }
+                        }
+                        
+                        // Handle pekerjaan_ibu (could be object with nested properties)
+                        if (peserta.biodata_ortu.pekerjaan_ibu) {
+                            if (typeof peserta.biodata_ortu.pekerjaan_ibu === 'object') {
+                                document.getElementById('edit-pekerjaan-ibu').value = peserta.biodata_ortu.pekerjaan_ibu.pekerjaan || '';
+                            } else {
+                                document.getElementById('edit-pekerjaan-ibu').value = peserta.biodata_ortu.pekerjaan_ibu || '';
+                            }
+                        }
+                        
+                        // Handle penghasilan_ortu (could be object with nested properties)
+                        if (peserta.biodata_ortu.penghasilan_ortu) {
+                            if (typeof peserta.biodata_ortu.penghasilan_ortu === 'object') {
+                                document.getElementById('edit-penghasilan-ortu').value = peserta.biodata_ortu.penghasilan_ortu.penghasilan || '';
+                            } else {
+                                document.getElementById('edit-penghasilan-ortu').value = peserta.biodata_ortu.penghasilan_ortu || '';
+                            }
+                        }
+                    }
+                    
+                    // Show the modal
+                    openModal('editModal');
+                    
+                } else {
+                    showNotification('Gagal memuat data peserta', 'error');
+                }
+            } catch (error) {
+                print.error('Error fetching peserta data for edit:', error);
+                showNotification('Terjadi kesalahan saat memuat data peserta', 'error');
+            }
+        }
+
+        // Handle edit form submission
+        document.getElementById('editPesertaForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('edit-id').value;
+            if (!id) {
+                showNotification('ID Peserta tidak valid', 'error');
+                return;
+            }
+            
+            // Gather form data
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Create nested structure for biodata_ortu
+            const biodataOrtu = {
+                nama_ayah: data.nama_ayah || '',
+                nama_ibu: data.nama_ibu || '',
+                pekerjaan_ayah: data.pekerjaan_ayah || '',
+                pekerjaan_ibu: data.pekerjaan_ibu || '',
+                penghasilan_ortu: data.penghasilan_ortu || ''
+            };
+            
+            // Remove individual parent fields from the main object
+            delete data.nama_ayah;
+            delete data.nama_ibu;
+            delete data.pekerjaan_ayah;
+            delete data.pekerjaan_ibu;
+            delete data.penghasilan_ortu;
+            
+            // Add the nested object
+            data.biodata_ortu = biodataOrtu;
+            
+            try {
+                // Show loading notification
+                showNotification('Menyimpan perubahan...', 'info');
+                
+                const response = await AwaitFetchApi(`admin/peserta/${id}`, 'PUT', data);
+                
+                if (response.meta?.code === 200) {
+                    showNotification('Data peserta berhasil diperbarui', 'success');
+                    closeModal('editModal');
+                    loadPesertaData(currentPage); // Refresh the table
+                    
+                    // If the current detail modal is open and showing this peserta, refresh it
+                    if (currentPesertaId === parseInt(id)) {
+                        viewDetail(id);
+                    }
+                }
+            } catch (error) {
+                print.error('Error updating peserta data:', error);
+                showNotification('Terjadi kesalahan saat memperbarui data peserta', 'error');
+            }
+        });
     </script>
     
     <!-- Add SheetJS library for Excel export -->
@@ -1658,4 +1929,5 @@
     
     <!-- Add jsPDF library for direct PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 @endsection
