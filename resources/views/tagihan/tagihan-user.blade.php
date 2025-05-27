@@ -59,7 +59,7 @@
     <div class="relative top-20 mx-auto p-5 border w-2/3 shadow-lg rounded-md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-medium leading-6 text-gray-900">Detail Tagihan</h3>
-            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-500">
+            <button onclick="closeModal('detailModal')" class="text-gray-400 hover:text-gray-500">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -86,6 +86,18 @@
                         <label class="block text-sm font-medium text-gray-700">Total Tagihan</label>
                         <p class="mt-1 text-lg font-semibold" id="detail-total">-</p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">VA Number</label>
+                        <p class="mt-1" id="detail-va-number">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Transaction QR ID</label>
+                        <p class="mt-1" id="detail-transaction-qr-id">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Created Time</label>
+                        <p class="mt-1" id="detail-created-time">-</p>
+                    </div>
                 </div>
             </div>
             
@@ -107,6 +119,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Terakhir Diupdate</label>
                         <p class="mt-1" id="detail-updated">-</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">QR Data</label>
+                        <p class="mt-1 break-all text-xs" id="detail-qr-data">-</p>
                     </div>
                 </div>
             </div>
@@ -451,7 +467,13 @@
                 document.getElementById('detail-created').textContent = tagihan.created_at ? new Date(tagihan.created_at).toLocaleString() : '-';
                 document.getElementById('detail-updated').textContent = tagihan.updated_at ? new Date(tagihan.updated_at).toLocaleString() : '-';
                 
-                document.getElementById('detailModal').classList.remove('hidden');
+                // Add new fields
+                document.getElementById('detail-va-number').textContent = tagihan.va_number || '-';
+                document.getElementById('detail-transaction-qr-id').textContent = tagihan.transaction_qr_id || '-';
+                document.getElementById('detail-created-time').textContent = tagihan.created_time || '-';
+                document.getElementById('detail-qr-data').textContent = tagihan.qr_data || '-';
+                
+                openModal('detailModal');
             } else {
                 showNotification(response.meta?.message || 'Gagal memuat detail tagihan', 'error');
             }
@@ -495,9 +517,9 @@
         }
     }
 
-    function closeModal() {
-        document.getElementById('detailModal').classList.add('hidden');
-    }
+        // function closeModal() {
+        //     document.getElementById('detailModal').classList.add('hidden');
+        // }
 
     async function loadTrashData(page = 1) {
         try {

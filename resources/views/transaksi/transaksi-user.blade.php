@@ -446,6 +446,7 @@
             if (response.meta?.code === 200) {
                 const transaksi = response.data;
                 
+                // Informasi Transaksi
                 document.getElementById('detail-id').textContent = transaksi.id;
                 document.getElementById('detail-ref').textContent = transaksi.ref_no || '-';
                 
@@ -472,18 +473,17 @@
                 }
                 
                 document.getElementById('detail-total').textContent = formatRupiah(transaksi.total);
+                
+                // Detail Pembayaran
                 document.getElementById('detail-method').textContent = transaksi.method || '-';
                 document.getElementById('detail-va').textContent = transaksi.va_number || '-';
                 document.getElementById('detail-qr').textContent = transaksi.transaction_qr_id || '-';
-                document.getElementById('detail-time').textContent = isValidDate(transaksi.created_at) ? 
-                    new Date(transaksi.created_at).toLocaleString() : (isValidDate(transaksi.created_time) ? 
-                    new Date(transaksi.created_time).toLocaleString() : (transaksi.created_time || '-'));
+                document.getElementById('detail-time').textContent = transaksi.created_time || '-';
                 
-                document.getElementById('detail-created').textContent = isValidDate(transaksi.created_at) ? 
-                    new Date(transaksi.created_at).toLocaleString() : (transaksi.created_at || '-');
-                document.getElementById('detail-updated').textContent = isValidDate(transaksi.updated_at) ? 
-                    new Date(transaksi.updated_at).toLocaleString() : (transaksi.updated_at || '-');
-                document.getElementById('detail-userid').textContent = transaksi.user_id || (transaksi.user ? transaksi.user.id : '-');
+                // Informasi Tambahan
+                document.getElementById('detail-created').textContent = transaksi.created_at || '-';
+                document.getElementById('detail-updated').textContent = transaksi.updated_at || '-';
+                document.getElementById('detail-userid').textContent = transaksi.user ? transaksi.user.id : '-';
                 
                 // Add peserta name to the modal
                 const detailInfo = document.querySelector('.mt-6 .grid');
@@ -509,7 +509,19 @@
                 }
                 document.getElementById('detail-phone').textContent = transaksi.user && transaksi.user.no_telp ? transaksi.user.no_telp : '-';
                 
-                document.getElementById('detailModal').classList.remove('hidden');
+                // Add tagihan information
+                if (!document.getElementById('detail-tagihan')) {
+                    const tagihanDiv = document.createElement('div');
+                    tagihanDiv.innerHTML = `
+                        <span>Tagihan:</span>
+                        <p id="detail-tagihan" class="font-medium">-</p>
+                    `;
+                    detailInfo.appendChild(tagihanDiv);
+                }
+                document.getElementById('detail-tagihan').textContent = 
+                    transaksi.tagihan ? `${transaksi.tagihan.nama_tagihan} (${formatRupiah(transaksi.tagihan.total)})` : '-';
+                
+                openModal('detailModal');
             } else {
                 showNotification(response.meta?.message || 'Gagal memuat detail transaksi', 'error');
             }

@@ -39,13 +39,13 @@
             <x-filter-select 
                 id="angkatanFilter" 
                 label="Angkatan" 
-                :options="[''=>'Semua Angkatan', '2023'=>'2023', '2024'=>'2024', '2025'=>'2025']" 
+                :options="[''=>'Semua Angkatan', '2023'=>'2023', '2024'=>'2024', '2025'=>'2025', '2026'=>'2026']" 
                 onChangeFunction="updateAngkatanFilter" />
             
             <x-filter-date-range 
                 startId="startDate" 
                 endId="endDate" 
-                label="Tanggal Daftar" 
+                label="Range Tanggal Daftar" 
                 onStartChangeFunction="updateStartDateFilter" 
                 onEndChangeFunction="updateEndDateFilter" />
         </x-filter>
@@ -115,8 +115,8 @@
                             <label class="block text-gray-700 text-sm font-bold mb-2">Jenis Kelamin</label>
                             <select name="jenis_kelamin"
                                 class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
+                                <option value="Laki-laki">Laki-laki</option>
+                                <option value="Perempuan">Perempuan</option>
                             </select>
                         </div>
                     </div>
@@ -221,6 +221,18 @@
                                 <label class="block text-sm font-medium text-gray-700">Pilihan Kelas</label>
                                 <p class="mt-1" id="detail-jurusan1">-</p>
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">SPP</label>
+                                <p class="mt-1" id="detail-spp">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Wakaf</label>
+                                <p class="mt-1" id="detail-wakaf">-</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pengajuan Biaya</label>
+                                <p class="mt-1" id="detail-pengajuan-biaya">-</p>
+                            </div>
                             <div id="detail-user-container" class="border-t border-gray-200 mt-4 pt-4">
                                 <label class="block text-sm font-medium text-gray-700">ID User</label>
                                 <p class="mt-1" id="detail-user-id">-</p>
@@ -237,7 +249,9 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
-                                <p class="mt-1" id="detail-pekerjaan-ayah">-</p>
+                                <select id="detail-pekerjaan-ayah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="">Pilih Pekerjaan</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
@@ -245,13 +259,42 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
-                                <p class="mt-1" id="detail-pekerjaan-ibu">-</p>
+                                <select id="detail-pekerjaan-ibu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="">Pilih Pekerjaan</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
                                 <p class="mt-1" id="detail-penghasilan-ortu">-</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-4 text-blue-700 border-b pb-2">Progress Pembayaran</h4>
+                    <div id="payment-progress-container" class="space-y-4">
+                        <div id="payment-loading" class="text-gray-500">Memuat progress pembayaran...</div>
+                        <div id="payment-content" class="hidden">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                                <div class="bg-green-50 p-3 rounded-lg">
+                                    <div class="text-sm text-green-600 font-medium">Sudah Dibayar</div>
+                                    <div class="text-lg font-bold text-green-700" id="payment-paid">Rp 0</div>
+                                </div>
+                                <div class="bg-red-50 p-3 rounded-lg">
+                                    <div class="text-sm text-red-600 font-medium">Belum Dibayar</div>
+                                    <div class="text-lg font-bold text-red-700" id="payment-unpaid">Rp 0</div>
+                                </div>
+                                <div class="bg-blue-50 p-3 rounded-lg">
+                                    <div class="text-sm text-blue-600 font-medium">Progress</div>
+                                    <div class="text-lg font-bold text-blue-700" id="payment-percentage">0%</div>
+                                </div>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-4">
+                                <div class="bg-blue-600 h-4 rounded-full transition-all duration-300" id="payment-progress-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div id="payment-error" class="hidden text-red-500">Gagal memuat progress pembayaran</div>
                     </div>
                 </div>
 
@@ -418,8 +461,8 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
                                 <select id="edit-jenis-kelamin" name="jenis_kelamin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
-                                    <option value="L">Laki-laki</option>
-                                    <option value="P">Perempuan</option>
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
                                 </select>
                             </div>
                             <div>
@@ -428,7 +471,7 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
-                                <input type="text" id="edit-no-telp" name="no_telp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                <input type="text" id="edit-no-telp" name="no_telp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
                             </div>
                         </div>
                     </div>
@@ -441,13 +484,33 @@
                                 <label class="block text-sm font-medium text-gray-700">Jenjang Sekolah</label>
                                 <select id="edit-jenjang" name="jenjang_sekolah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                                     <option value="SD">SD</option>
-                                    <option value="SMP">SMP</option>
+                                    <option value="SMP 1">SMP 1</option>
+                                    <option value="SMP 2">SMP 2</option>
                                     <option value="SMA">SMA</option>
+                                    <option value="SMK">SMK</option>
                                 </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Angkatan</label>
                                 <input type="text" id="edit-angkatan" name="angkatan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pilihan Kelas</label>
+                                <select id="edit-jurusan" name="jurusan1_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="">Pilih Kelas</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">SPP</label>
+                                <input type="text" id="edit-spp" name="spp" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Wakaf</label>
+                                <input type="text" id="edit-wakaf" name="wakaf" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Pengajuan Biaya</label>
+                                <input type="text" id="edit-pengajuan-biaya" name="pengajuan_biaya" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50" readonly style="background-color: #f3f4f6; cursor: not-allowed;">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Status</label>
@@ -470,7 +533,9 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
-                                <input type="text" id="edit-pekerjaan-ayah" name="pekerjaan_ayah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                <select id="edit-pekerjaan-ayah" name="pekerjaan_ayah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="">Pilih Pekerjaan</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
@@ -478,7 +543,9 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
-                                <input type="text" id="edit-pekerjaan-ibu" name="pekerjaan_ibu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                <select id="edit-pekerjaan-ibu" name="pekerjaan_ibu" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                                    <option value="">Pilih Pekerjaan</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
@@ -618,7 +685,7 @@
             try {
                 let sortField = sortBy;
                 let clientSideSorting = false;
-
+                
                 // For nested relations like penghasilan_ortu, use client-side sorting
                 if (sortBy === 'penghasilan_ortu') {
                     // Use a standard field for the API call since we'll sort client-side
@@ -913,6 +980,9 @@
 
         async function viewDetail(id) {
             try {
+                // Load pekerjaan options first
+                await loadPekerjaanOptions();
+                
                 const response = await AwaitFetchApi(`admin/peserta/${id}`, 'GET');
                 if (response?.data) {
                     const peserta = response.data;
@@ -953,6 +1023,11 @@
                         document.getElementById('detail-jurusan1').textContent = '-';
                     }
 
+                    // Handle SPP and Wakaf
+                    document.getElementById('detail-spp').textContent = peserta.spp ? formatRupiah(peserta.spp) : '-';
+                    document.getElementById('detail-wakaf').textContent = peserta.wakaf ? formatRupiah(peserta.wakaf) : '-';
+                    document.getElementById('detail-pengajuan-biaya').textContent = peserta.pengajuan_biaya ? formatRupiah(peserta.pengajuan_biaya) : '-';
+
                     // Populate parent data if available
                     if (peserta.biodata_ortu) {
                         document.getElementById('detail-nama-ayah').textContent = peserta.biodata_ortu.nama_ayah || '-';
@@ -961,27 +1036,27 @@
                         // Handle pekerjaan_ayah (could be object with nested properties)
                         if (peserta.biodata_ortu.pekerjaan_ayah) {
                             if (typeof peserta.biodata_ortu.pekerjaan_ayah === 'object') {
-                                document.getElementById('detail-pekerjaan-ayah').textContent = peserta.biodata_ortu
-                                    .pekerjaan_ayah.pekerjaan || '-';
+                                document.getElementById('detail-pekerjaan-ayah').value = peserta.biodata_ortu
+                                    .pekerjaan_ayah.id || '';
                             } else {
-                                document.getElementById('detail-pekerjaan-ayah').textContent = peserta.biodata_ortu
-                                    .pekerjaan_ayah || '-';
+                                document.getElementById('detail-pekerjaan-ayah').value = peserta.biodata_ortu
+                                    .pekerjaan_ayah || '';
                             }
                         } else {
-                            document.getElementById('detail-pekerjaan-ayah').textContent = '-';
+                            document.getElementById('detail-pekerjaan-ayah').value = '';
                         }
 
                         // Handle pekerjaan_ibu (could be object with nested properties)
                         if (peserta.biodata_ortu.pekerjaan_ibu) {
                             if (typeof peserta.biodata_ortu.pekerjaan_ibu === 'object') {
-                                document.getElementById('detail-pekerjaan-ibu').textContent = peserta.biodata_ortu
-                                    .pekerjaan_ibu.pekerjaan || '-';
+                                document.getElementById('detail-pekerjaan-ibu').value = peserta.biodata_ortu
+                                    .pekerjaan_ibu.id || '';
                             } else {
-                                document.getElementById('detail-pekerjaan-ibu').textContent = peserta.biodata_ortu
-                                    .pekerjaan_ibu || '-';
+                                document.getElementById('detail-pekerjaan-ibu').value = peserta.biodata_ortu
+                                    .pekerjaan_ibu || '';
                             }
                         } else {
-                            document.getElementById('detail-pekerjaan-ibu').textContent = '-';
+                            document.getElementById('detail-pekerjaan-ibu').value = '';
                         }
 
                         // Handle penghasilan_ortu (could be object with nested properties)
@@ -1000,8 +1075,8 @@
                         // If no parent data, display default values
                         document.getElementById('detail-nama-ayah').textContent = '-';
                         document.getElementById('detail-nama-ibu').textContent = '-';
-                        document.getElementById('detail-pekerjaan-ayah').textContent = '-';
-                        document.getElementById('detail-pekerjaan-ibu').textContent = '-';
+                        document.getElementById('detail-pekerjaan-ayah').value = '';
+                        document.getElementById('detail-pekerjaan-ibu').value = '';
                         document.getElementById('detail-penghasilan-ortu').textContent = '-';
                     }
 
@@ -1013,6 +1088,11 @@
                         .created_at).toLocaleString() : '-';
                     document.getElementById('detail-updated').textContent = peserta.updated_at ? new Date(peserta
                         .updated_at).toLocaleString() : '-';
+
+                    // Load payment progress for this user
+                    if (peserta.user_id) {
+                        loadPaymentProgress(peserta.user_id);
+                    }
 
                     // Load berkas for this peserta
                     loadBerkasPeserta(peserta.id);
@@ -1058,7 +1138,7 @@
             const status = document.getElementById('detail-status').value;
 
             try {
-                const response = await AwaitFetchApi(`admin/peserta/${currentPesertaId}`, 'PUT', {
+                const response = await AwaitFetchApi(`admin/peserta/status/${currentPesertaId}`, 'PUT', {
                     status
                 });
 
@@ -1626,6 +1706,73 @@
                     return element ? element.value || '-' : '-';
                 };
                 
+                // Helper function to load and add image to PDF
+                const addImageToPdf = async (imageUrl, fileName, x, y, maxWidth = 50, maxHeight = 60) => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        
+                        img.onload = () => {
+                            try {
+                                // Create canvas to convert image
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                
+                                let { width, height } = img;
+                                const aspectRatio = width / height;
+                                
+                                // Calculate new dimensions while maintaining aspect ratio
+                                if (width > height) {
+                                    width = Math.min(maxWidth, width);
+                                    height = width / aspectRatio;
+                                    if (height > maxHeight) {
+                                        height = maxHeight;
+                                        width = height * aspectRatio;
+                                    }
+                                } else {
+                                    height = Math.min(maxHeight, height);
+                                    width = height * aspectRatio;
+                                    if (width > maxWidth) {
+                                        width = maxWidth;
+                                        height = width / aspectRatio;
+                                    }
+                                }
+                                
+                                // Set canvas size
+                                canvas.width = width * 3.78; // Convert mm to pixels
+                                canvas.height = height * 3.78;
+                                
+                                // Draw image on canvas
+                                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                
+                                // Convert to base64
+                                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                                
+                                // Add image to PDF
+                                doc.addImage(imgData, 'JPEG', x, y, width, height);
+                                
+                                // Add image caption
+                                doc.setFont('helvetica', 'normal');
+                                doc.setFontSize(8);
+                                doc.setTextColor(100, 100, 100);
+                                doc.text(fileName, x, y + height + 5);
+                                
+                                resolve({ width, height });
+                            } catch (error) {
+                                print.error('Error processing image:', error);
+                                resolve(null);
+                            }
+                        };
+                        
+                        img.onerror = () => {
+                            print.error('Error loading image:', imageUrl);
+                            resolve(null);
+                        };
+                        
+                        img.src = imageUrl;
+                    });
+                };
+                
                 // Define sections and fields
                 const sections = [
                     {
@@ -1655,6 +1802,9 @@
                         fields: [
                             { label: "Jenjang Sekolah", value: getElementText('detail-jenjang') },
                             { label: "Pilihan Kelas", value: getElementText('detail-jurusan1') },
+                            { label: "SPP", value: getElementText('detail-spp') },
+                            { label: "Wakaf", value: getElementText('detail-wakaf') },
+                            { label: "Pengajuan Biaya", value: getElementText('detail-pengajuan-biaya') },
                             { label: "ID User", value: getElementText('detail-user-id') }
                         ]
                     },
@@ -1735,7 +1885,88 @@
                     y += 5;
                 }
                 
-                // Add Berkas information
+                // Add Berkas Images Section
+                try {
+                    const berkasResponse = await AwaitFetchApi(`admin/berkas/peserta/${currentPesertaId}`, 'GET');
+                    
+                    if (berkasResponse?.data && Array.isArray(berkasResponse.data) && berkasResponse.data.length > 0) {
+                        // Filter image files
+                        const imageFiles = berkasResponse.data.filter(berkas => {
+                            const fileUrl = berkas.url_file || '';
+                            const fileExt = fileUrl.split('.').pop().toLowerCase();
+                            return ['jpg', 'jpeg', 'png', 'gif'].includes(fileExt);
+                        });
+                        
+                        if (imageFiles.length > 0) {
+                            // Check if we need a new page
+                            if (y > 200) {
+                                doc.addPage();
+                                y = 20;
+                            }
+                            
+                            // Title
+                            doc.setFont('helvetica', 'bold');
+                            doc.setFontSize(12);
+                            doc.setTextColor(titleColor[0], titleColor[1], titleColor[2]);
+                            doc.text("BERKAS GAMBAR PESERTA", 20, y);
+                            
+                            // Draw a colored line under the title
+                            doc.setDrawColor(0, 102, 204);
+                            doc.setLineWidth(0.2);
+                            doc.line(20, y + 1, 190, y + 1);
+                            
+                            y += 10;
+                            
+                            // Add images in grid layout (2 columns)
+                            let currentX = 20;
+                            let currentY = y;
+                            let columnCount = 0;
+                            const maxColumns = 2;
+                            const columnWidth = 85; // Half page width
+                            const imageSpacing = 10;
+                            
+                            for (const berkas of imageFiles) {
+                                // Check if we need a new page
+                                if (currentY > 200) {
+                                    doc.addPage();
+                                    currentY = 20;
+                                    currentX = 20;
+                                    columnCount = 0;
+                                }
+                                
+                                const imageResult = await addImageToPdf(
+                                    berkas.url_file, 
+                                    berkas.nama_file, 
+                                    currentX, 
+                                    currentY,
+                                    70, // maxWidth
+                                    80  // maxHeight
+                                );
+                                
+                                if (imageResult) {
+                                    columnCount++;
+                                    
+                                    if (columnCount >= maxColumns) {
+                                        // Move to next row
+                                        currentY += Math.max(imageResult.height, 80) + imageSpacing + 10; // Extra space for caption
+                                        currentX = 20;
+                                        columnCount = 0;
+                                    } else {
+                                        // Move to next column
+                                        currentX += columnWidth;
+                                    }
+                                }
+                            }
+                            
+                            // Update y position for next section
+                            y = currentY + 90; // Add some space after images
+                        }
+                    }
+                } catch (error) {
+                    print.error('Error loading berkas images:', error);
+                }
+                
+                // Add Berkas List (non-image files)
                 const berkasContainer = document.getElementById('berkas-list');
                 if (berkasContainer && !berkasContainer.classList.contains('hidden')) {
                     // Check if we need a new page
@@ -1748,7 +1979,7 @@
                     doc.setFont('helvetica', 'bold');
                     doc.setFontSize(12);
                     doc.setTextColor(titleColor[0], titleColor[1], titleColor[2]);
-                    doc.text("BERKAS PESERTA", 20, y);
+                    doc.text("DAFTAR BERKAS PESERTA", 20, y);
                     
                     // Draw a colored line under the title
                     doc.setDrawColor(0, 102, 204);
@@ -1794,13 +2025,16 @@
                 
                 showNotification('PDF berhasil di-export!', 'success');
             } catch (error) {
-                console.error('Error exporting to PDF:', error);
+                print.error('Error exporting to PDF:', error);
                 showNotification('Gagal mengexport data ke PDF: ' + error.message, 'error');
             }
         }
 
         async function editPeserta(id) {
             try {
+                // Load pekerjaan options first
+                await loadPekerjaanOptions();
+                
                 const response = await AwaitFetchApi(`admin/peserta/${id}`, 'GET');
                 if (response?.data) {
                     const peserta = response.data;
@@ -1814,7 +2048,7 @@
                     document.getElementById('edit-nama').value = peserta.nama || '';
                     document.getElementById('edit-tempat-lahir').value = peserta.tempat_lahir || '';
                     document.getElementById('edit-tanggal-lahir').value = peserta.tanggal_lahir ? new Date(peserta.tanggal_lahir).toISOString().split('T')[0] : '';
-                    document.getElementById('edit-jenis-kelamin').value = peserta.jenis_kelamin || 'L';
+                    document.getElementById('edit-jenis-kelamin').value = peserta.jenis_kelamin || 'Laki-laki';
                     document.getElementById('edit-alamat').value = peserta.alamat || '';
                     document.getElementById('edit-no-telp').value = peserta.no_telp || '';
                     
@@ -1823,30 +2057,42 @@
                     document.getElementById('edit-angkatan').value = peserta.angkatan || '';
                     document.getElementById('edit-status').value = peserta.status || '';
                     
+                    // Fill SPP and Wakaf (readonly)
+                    document.getElementById('edit-spp').value = peserta.spp ? formatRupiah(peserta.spp) : '-';
+                    document.getElementById('edit-wakaf').value = peserta.wakaf ? formatRupiah(peserta.wakaf) : '-';
+                    document.getElementById('edit-pengajuan-biaya').value = peserta.pengajuan_biaya ? formatRupiah(peserta.pengajuan_biaya) : '-';
+                    
+                    // Load jurusan options based on jenjang_sekolah and set selected value
+                    await loadJurusanOptions(peserta.jenjang_sekolah);
+                    
+                    // Set jurusan selection
+                    if (peserta.jurusan1) {
+                        const jurusanId = typeof peserta.jurusan1 === 'object' ? peserta.jurusan1.id : peserta.jurusan1;
+                        document.getElementById('edit-jurusan').value = jurusanId || '';
+                    }
+                    
                     // Fill parent data if available
                     if (peserta.biodata_ortu) {
                         document.getElementById('edit-nama-ayah').value = peserta.biodata_ortu.nama_ayah || '';
                         document.getElementById('edit-nama-ibu').value = peserta.biodata_ortu.nama_ibu || '';
                         
-                        // Handle pekerjaan_ayah (could be object with nested properties)
+                        // Handle pekerjaan_ayah
                         if (peserta.biodata_ortu.pekerjaan_ayah) {
-                            if (typeof peserta.biodata_ortu.pekerjaan_ayah === 'object') {
-                                document.getElementById('edit-pekerjaan-ayah').value = peserta.biodata_ortu.pekerjaan_ayah.pekerjaan || '';
-                            } else {
-                                document.getElementById('edit-pekerjaan-ayah').value = peserta.biodata_ortu.pekerjaan_ayah || '';
-                            }
+                            const pekerjaanAyahId = typeof peserta.biodata_ortu.pekerjaan_ayah === 'object' 
+                                ? peserta.biodata_ortu.pekerjaan_ayah.id 
+                                : peserta.biodata_ortu.pekerjaan_ayah;
+                            document.getElementById('edit-pekerjaan-ayah').value = pekerjaanAyahId || '';
                         }
-                        
-                        // Handle pekerjaan_ibu (could be object with nested properties)
+
+                        // Handle pekerjaan_ibu
                         if (peserta.biodata_ortu.pekerjaan_ibu) {
-                            if (typeof peserta.biodata_ortu.pekerjaan_ibu === 'object') {
-                                document.getElementById('edit-pekerjaan-ibu').value = peserta.biodata_ortu.pekerjaan_ibu.pekerjaan || '';
-                            } else {
-                                document.getElementById('edit-pekerjaan-ibu').value = peserta.biodata_ortu.pekerjaan_ibu || '';
-                            }
+                            const pekerjaanIbuId = typeof peserta.biodata_ortu.pekerjaan_ibu === 'object' 
+                                ? peserta.biodata_ortu.pekerjaan_ibu.id 
+                                : peserta.biodata_ortu.pekerjaan_ibu;
+                            document.getElementById('edit-pekerjaan-ibu').value = pekerjaanIbuId || '';
                         }
                         
-                        // Handle penghasilan_ortu (could be object with nested properties)
+                        // Handle penghasilan_ortu
                         if (peserta.biodata_ortu.penghasilan_ortu) {
                             if (typeof peserta.biodata_ortu.penghasilan_ortu === 'object') {
                                 document.getElementById('edit-penghasilan-ortu').value = peserta.biodata_ortu.penghasilan_ortu.penghasilan || '';
@@ -1922,12 +2168,137 @@
                 showNotification('Terjadi kesalahan saat memperbarui data peserta', 'error');
             }
         });
+
+        // Helper to append pekerjaan options
+        function appendPekerjaanOptions(select, pekerjaanList) {
+            // Hapus semua option kecuali yang pertama
+            select.length = 1;
+            pekerjaanList.forEach(pekerjaan => {
+                const opt = document.createElement('option');
+                opt.value = pekerjaan.id;
+                opt.textContent = pekerjaan.nama_pekerjaan;
+                select.appendChild(opt);
+            });
+        }
+
+        async function loadPekerjaanOptions() {
+            try {
+                const response = await AwaitFetchApi('admin/pekerjaan-ortu', 'GET');
+                if (response?.data) {
+                    const pekerjaanList = response.data;
+                    const selects = [
+                        document.getElementById('detail-pekerjaan-ayah'),
+                        document.getElementById('detail-pekerjaan-ibu'),
+                        document.getElementById('edit-pekerjaan-ayah'),
+                        document.getElementById('edit-pekerjaan-ibu')
+                    ];
+                    selects.forEach(select => {
+                        if (select) appendPekerjaanOptions(select, pekerjaanList);
+                    });
+                }
+            } catch (error) {
+                print.error('Error loading pekerjaan options:', error);
+                showNotification('Gagal memuat daftar pekerjaan', 'error');
+            }
+        }
+
+        // Helper to append jurusan options
+        function appendJurusanOptions(select, jurusanList, jenjangSekolah = null) {
+            // Clear existing options except the first one
+            select.length = 1;
+            
+            // Filter jurusan by jenjang_sekolah if provided
+            const filteredJurusan = jenjangSekolah 
+                ? jurusanList.filter(jurusan => jurusan.jenjang_sekolah === jenjangSekolah)
+                : jurusanList;
+            
+            filteredJurusan.forEach(jurusan => {
+                const opt = document.createElement('option');
+                opt.value = jurusan.id;
+                opt.textContent = jurusan.jurusan;
+                select.appendChild(opt);
+            });
+        }
+
+        async function loadJurusanOptions(jenjangSekolah = null) {
+            try {
+                const response = await AwaitFetchApi('admin/jurusan', 'GET');
+                if (response?.data) {
+                    const jurusanList = response.data;
+                    const editJurusanSelect = document.getElementById('edit-jurusan');
+                    
+                    if (editJurusanSelect) {
+                        appendJurusanOptions(editJurusanSelect, jurusanList, jenjangSekolah);
+                    }
+                }
+            } catch (error) {
+                print.error('Error loading jurusan options:', error);
+                showNotification('Gagal memuat daftar kelas', 'error');
+            }
+        }
+
+        // Add event listener for jenjang change to reload jurusan options
+        document.addEventListener('DOMContentLoaded', function() {
+            const editJenjangSelect = document.getElementById('edit-jenjang');
+            if (editJenjangSelect) {
+                editJenjangSelect.addEventListener('change', function() {
+                    const selectedJenjang = this.value;
+                    if (selectedJenjang) {
+                        loadJurusanOptions(selectedJenjang);
+                    } else {
+                        // Clear jurusan options if no jenjang selected
+                        const editJurusanSelect = document.getElementById('edit-jurusan');
+                        if (editJurusanSelect) {
+                            editJurusanSelect.length = 1; // Keep only the first option
+                        }
+                    }
+                });
+            }
+        });
+
+        // Helper function to format currency
+        function formatRupiah(angka) {
+            if (angka === null || angka === undefined || angka === 0) return '-';
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(angka);
+        }
+
+        async function loadPaymentProgress(userId) {
+            // Reset payment progress container state
+            document.getElementById('payment-loading').classList.remove('hidden');
+            document.getElementById('payment-content').classList.add('hidden');
+            document.getElementById('payment-error').classList.add('hidden');
+
+            try {
+                const response = await AwaitFetchApi(`admin/user/progressPayment/${userId}`, 'GET');
+                
+                document.getElementById('payment-loading').classList.add('hidden');
+
+                if (response?.data && response.meta?.code === 200) {
+                    const paymentData = response.data;
+                    
+                    // Update payment information
+                    document.getElementById('payment-paid').textContent = formatRupiah(paymentData.paid || 0);
+                    document.getElementById('payment-unpaid').textContent = formatRupiah(paymentData.unpaid || 0);
+                    document.getElementById('payment-percentage').textContent = `${paymentData.progress || 0}%`;
+                    
+                    // Update progress bar
+                    const progressBar = document.getElementById('payment-progress-bar');
+                    progressBar.style.width = `${paymentData.progress || 0}%`;
+                    
+                    // Show content
+                    document.getElementById('payment-content').classList.remove('hidden');
+                } else {
+                    document.getElementById('payment-error').classList.remove('hidden');
+                }
+            } catch (error) {
+                print.error('Error fetching payment progress:', error);
+                document.getElementById('payment-loading').classList.add('hidden');
+                document.getElementById('payment-error').classList.remove('hidden');
+            }
+        }
     </script>
-    
-    <!-- Add SheetJS library for Excel export -->
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
-    <!-- Add jsPDF library for direct PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 @endsection
