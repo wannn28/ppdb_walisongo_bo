@@ -12,6 +12,10 @@
     <script src="{{ asset('js/logger.js') }}" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+    <!-- jsPDF for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- XLSX for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         window.APP_DEBUG_VIEW = "{{ env('APP_DEBUG_VIEW', false) ? 'true' : 'false' }}";
         window.API_BASE_URL = '{{ config('app.api_url') }}';
