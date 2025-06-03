@@ -41,17 +41,17 @@
         <div class="bg-white rounded-lg p-6 shadow-md">
             <h2 class="text-xl font-semibold mb-4">Chart Siswa</h2>
             <div class="h-64 flex items-end space-x-4">
-                <div class="flex-1 flex flex-col items-center">
+                {{-- <div class="flex-1 flex flex-col items-center">
                     <div class="bg-blue-400 w-full h-32 rounded-t-md"></div>
                     <div class="mt-2">SD</div>
-                </div>
-                <div class="flex-1 flex flex-col items-center">
+                </div> --}}
+                {{-- <div class="flex-1 flex flex-col items-center">
                     <div class="bg-green-500 w-full h-48 rounded-t-md"></div>
                     <div class="mt-2">SMP 1</div>
-                </div>
+                </div> --}}
                 <div class="flex-1 flex flex-col items-center">
                     <div class="bg-green-500 w-full h-48 rounded-t-md"></div>
-                    <div class="mt-2">SMP 2</div>
+                    <div class="mt-2">SMP</div>
                 </div>
                 <div class="flex-1 flex flex-col items-center">
                     <div class="bg-purple-500 w-full h-36 rounded-t-md"></div>

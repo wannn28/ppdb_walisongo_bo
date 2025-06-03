@@ -27,7 +27,7 @@
             <x-filter-select 
                 id="jenjangFilter" 
                 label="Jenjang Sekolah" 
-                :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP 1'=>'SMP 1', 'SMP 2'=>'SMP 2', 'SMA'=>'SMA', 'SMK'=>'SMK']" 
+                :options="[''=>'Semua Jenjang', 'SMP'=>'SMP', 'SMA'=>'SMA', 'SMK'=>'SMK']" 
                 onChangeFunction="updateJenjangFilter" />
             
             <x-filter-select 
@@ -81,17 +81,17 @@
                             Jenjang Sekolah
                         </label>
                         <div class="flex gap-2">
-                            <label class="inline-flex items-center">
+                            {{-- <label class="inline-flex items-center">
                                 <input type="checkbox" name="jenjang[]" value="SD" class="form-checkbox">
                                 <span class="ml-2">SD</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="checkbox" name="jenjang[]" value="SMP 1" class="form-checkbox">
                                 <span class="ml-2">SMP 1</span>
-                            </label>
+                            </label> --}}
                             <label class="inline-flex items-center">
-                                <input type="checkbox" name="jenjang[]" value="SMP 2" class="form-checkbox">
-                                <span class="ml-2">SMP 2</span>
+                                <input type="checkbox" name="jenjang[]" value="SMP" class="form-checkbox">
+                                <span class="ml-2">SMP</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="checkbox" name="jenjang[]" value="SMA" class="form-checkbox">
@@ -292,7 +292,7 @@
             ketentuanBerkas.forEach(item => {
                 // Handle kemungkinan penulisan jenjang salah
                 const jenjang = item.jenjang_sekolah.toUpperCase().trim();
-                const jenjangArray = jenjang.split(',').filter(j => ['SD', 'SMP 1', 'SMP 2', 'SMA', 'SMK'].includes(j));
+                const jenjangArray = jenjang.split(',').filter(j => [ 'SMP', 'SMA', 'SMK'].includes(j));
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -351,7 +351,7 @@
                 
                 ketentuanBerkas.forEach(item => {
                     const jenjang = item.jenjang_sekolah.toUpperCase().trim();
-                    const jenjangArray = jenjang.split(',').filter(j => ['SD', 'SMP 1', 'SMP 2', 'SMA', 'SMK'].includes(j));
+                    const jenjangArray = jenjang.split(',').filter(j => ['SMP', 'SMA', 'SMK'].includes(j));
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `

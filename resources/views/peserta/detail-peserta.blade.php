@@ -33,7 +33,7 @@
             <x-filter-select 
                 id="jenjangFilter" 
                 label="Jenjang" 
-                :options="[''=>'Semua Jenjang', 'SD'=>'SD', 'SMP'=>'SMP', 'SMA'=>'SMA', 'SMP 1'=>'SMP 1', 'SMP 2'=>'SMP 2']" 
+                :options="[''=>'Semua Jenjang', 'SMP'=>'SMP', 'SMA'=>'SMA', 'SMK'=>'SMK']" 
                 onChangeFunction="updateJenjangFilter" />
                 
             <x-filter-select 
@@ -483,9 +483,10 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Jenjang Sekolah</label>
                                 <select id="edit-jenjang" name="jenjang_sekolah" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
-                                    <option value="SD">SD</option>
+                                    {{-- <option value="SD">SD</option>
                                     <option value="SMP 1">SMP 1</option>
-                                    <option value="SMP 2">SMP 2</option>
+                                    <option value="SMP 2">SMP 2</option> --}}
+                                    <option value="SMP">SMP</option>
                                     <option value="SMA">SMA</option>
                                     <option value="SMK">SMK</option>
                                 </select>
